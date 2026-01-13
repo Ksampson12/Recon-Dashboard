@@ -127,9 +127,14 @@ export class DatabaseStorage implements IStorage {
 
   async upsertInventory(items: InventoryVehicle[]): Promise<void> {
     if (items.length === 0) return;
-    // Postgres upsert
+    
+    // De-duplicate in-memory first to avoid ON CONFLICT errors within the same batch
+    const uniqueItems = Array.from(
+      items.reduce((map, item) => map.set(item.vin, item), new Map<string, InventoryVehicle>()).values()
+    );
+
     await db.insert(inventoryVehicles)
-      .values(items)
+      .values(uniqueItems)
       .onConflictDoUpdate({
         target: inventoryVehicles.vin,
         set: {
@@ -145,8 +150,14 @@ export class DatabaseStorage implements IStorage {
 
   async upsertRos(items: ServiceRo[]): Promise<void> {
     if (items.length === 0) return;
+
+    // De-duplicate in-memory first
+    const uniqueItems = Array.from(
+      items.reduce((map, item) => map.set(item.roNumber, item), new Map<string, ServiceRo>()).values()
+    );
+
     await db.insert(serviceRos)
-      .values(items)
+      .values(uniqueItems)
       .onConflictDoUpdate({
         target: serviceRos.roNumber,
         set: {

@@ -91,17 +91,17 @@ async function processRecords(type: string, records: any[]) {
 
   if (type === "INVENTORY") {
     const items: InventoryVehicle[] = records.map(r => ({
-      vin: r.vin,
-      stockNo: r.stockno,
-      entryDate: parseDate(r.entrydate) || new Date().toISOString(), // Fallback? Blueprint says exclude nulls, but for MVP keep it safe
-      year: parseInt(r.year) || 0,
-      make: r.make || r.makenameupper,
-      model: r.model,
-      mileage: parseInt(r.mileage) || 0,
-      lotLocation: r.lotlocation,
-      soldDate: parseDate(r.solddate || r.vehiclesolddate),
+      vin: r.vin || r.VIN,
+      stockNo: r.stockno || r.stocknumber || r.StockNo,
+      entryDate: parseDate(r.entrydate || r.EntryDate || r.DateIn),
+      year: parseInt(r.year || r.Year) || 0,
+      make: r.make || r.makenameupper || r.Make,
+      model: r.model || r.Model,
+      mileage: parseInt(r.mileage || r.Mileage || r.Miles) || 0,
+      lotLocation: r.lotlocation || r.LotLocation || r.Location,
+      soldDate: parseDate(r.solddate || r.vehiclesolddate || r.SoldDate),
       updatedAt: new Date(),
-    })).filter(i => i.vin && i.stockNo); // Basic validation
+    })).filter(i => i.vin && i.stockNo && i.entryDate); // EntryDate is critical per blueprint
     
     await storage.upsertInventory(items);
   }
@@ -109,11 +109,11 @@ async function processRecords(type: string, records: any[]) {
   if (type === "RO_CLOSED" || type === "RO_OPEN") {
     const isOpen = type === "RO_OPEN";
     const items: ServiceRo[] = records.map(r => ({
-      roNumber: r.ronumber,
-      vin: r.vin,
-      openDate: parseDate(r.opendate),
-      closeDate: parseDate(r.closedate),
-      roStatusCode: r.rostatuscode,
+      roNumber: r.ronumber || r.RONumber || r.RepairOrder,
+      vin: r.vin || r.VIN,
+      openDate: parseDate(r.opendate || r.OpenDate),
+      closeDate: parseDate(r.closedate || r.CloseDate),
+      roStatusCode: r.rostatuscode || r.Status,
       isOpen,
       updatedAt: new Date(),
     })).filter(i => i.roNumber && i.vin);
@@ -123,13 +123,9 @@ async function processRecords(type: string, records: any[]) {
 
   if (type === "RO_CLOSED_DETAILS" || type === "RO_OPEN_DETAILS") {
     const items: ServiceRoDetail[] = records.map(r => ({
-      // id is serial, let DB handle it. But we defined it as required in type.
-      // Actually ServiceRoDetail type includes id: number.
-      // Drizzle insert can accept partial if we use InsertSchema, but storage.upsertRoDetails takes ServiceRoDetail[].
-      // Let's coerce.
-      roNumber: r.ronumber,
-      opCode: r.opcode,
-      opDescription: r.opcodedescription || r.opcodedesc,
+      roNumber: r.ronumber || r.RONumber || r.RepairOrder,
+      opCode: String(r.opcode || r.OpCode || r.OperationCode || ""),
+      opDescription: r.opcodedescription || r.opcodedesc || r.Description,
     } as any)).filter(i => i.roNumber && i.opCode);
     
     await storage.upsertRoDetails(items);
