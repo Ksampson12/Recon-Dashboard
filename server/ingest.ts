@@ -73,10 +73,10 @@ export async function processFiles() {
 function detectFileType(filename: string): string | null {
   const name = filename.toLowerCase();
   if (name.includes("inventory")) return "INVENTORY";
-  if (name.includes("servicesalesclosed") && !name.includes("details")) return "RO_CLOSED";
-  if (name.includes("servicesalesdetailsclosed")) return "RO_CLOSED_DETAILS";
-  if (name.includes("servicesalesopen") && !name.includes("details")) return "RO_OPEN";
-  if (name.includes("servicesalesdetailsopen")) return "RO_OPEN_DETAILS";
+  if (name.includes("salesclosed") || (name.includes("service") && name.includes("closed") && !name.includes("detail"))) return "RO_CLOSED";
+  if (name.includes("detailsclosed") || (name.includes("service") && name.includes("details") && name.includes("closed"))) return "RO_CLOSED_DETAILS";
+  if (name.includes("salesopen") || (name.includes("service") && name.includes("open") && !name.includes("detail"))) return "RO_OPEN";
+  if (name.includes("detailsopen") || (name.includes("service") && name.includes("details") && name.includes("open"))) return "RO_OPEN_DETAILS";
   return null;
 }
 
