@@ -156,25 +156,27 @@ export default function Dashboard() {
             <thead className="bg-muted/50 border-b border-border text-muted-foreground font-medium uppercase text-xs tracking-wider">
               <tr>
                 <th className="px-6 py-4">Stock #</th>
-                <th className="px-6 py-4">VIN</th>
-                <th className="px-6 py-4">Year/Make/Model</th>
+                <th className="px-6 py-4">VIN (Last 8)</th>
+                <th className="px-6 py-4">Vehicle</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right">Recon Days</th>
                 <th className="px-6 py-4 text-right">Entry Date</th>
+                <th className="px-6 py-4 text-right">Recon End Date</th>
+                <th className="px-6 py-4 text-right">RO #</th>
                 <th className="px-6 py-4"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {vehiclesLoading ? (
                  <tr>
-                   <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                   <td colSpan={9} className="px-6 py-12 text-center text-muted-foreground">
                      <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
                      Loading vehicles...
                    </td>
                  </tr>
               ) : vehiclesData?.items.length === 0 ? (
                 <tr>
-                   <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                   <td colSpan={9} className="px-6 py-12 text-center text-muted-foreground">
                      No vehicles found matching your criteria.
                    </td>
                  </tr>
@@ -201,8 +203,14 @@ export default function Dashboard() {
                         {vehicle.reconDays ?? '-'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right text-muted-foreground">
-                      {vehicle.entryDate ? format(new Date(vehicle.entryDate), 'MMM d, yyyy') : '-'}
+                    <td className="px-6 py-4 text-right text-muted-foreground font-mono text-xs">
+                      {vehicle.entryDate ? format(new Date(vehicle.entryDate), 'MM/dd/yy') : '-'}
+                    </td>
+                    <td className="px-6 py-4 text-right text-muted-foreground font-mono text-xs">
+                      {vehicle.lastReconCloseDate ? format(new Date(vehicle.lastReconCloseDate), 'MM/dd/yy') : '-'}
+                    </td>
+                    <td className="px-6 py-4 text-right text-muted-foreground font-mono text-xs">
+                      {vehicle.lastReconRoNumber || '-'}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Link href={`/vehicle/${vehicle.vin}`}>

@@ -1,0 +1,233 @@
+Purpose of this update
+
+We validated the data against the DMS dictionary and confirmed:
+
+✅ The correct recon OP code is UCI (not 100)
+
+✅ InventoryVehicle.EntryDate should be used as the recon start date
+
+Recon time must be calculated from inventory entry → last completed recon RO
+
+These instructions supersede any prior recon logic.
+
+1️⃣ Authoritative Data Sources (do not substitute)
+Inventory (Recon Start Anchor)
+
+Table / CSV
+
+InventoryVehicle_v
+
+File example: C185713_InventoryVehicle_All_*.csv
+
+Fields to use
+
+vin (join key)
+
+stockno
+
+entrydate ← authoritative recon start
+
+year
+
+make / makenameupper
+
+model
+
+mileage
+
+lotlocation
+
+solddate (optional flag only)
+
+📘 Dictionary reference:
+
+EntryDate = “Date that the control number is added to file.”
+
+This is the closest, consistent system-of-record definition for “inventory date.”
+
+Service RO – Closed (Recon Completion)
+
+Table / CSV
+
+ServiceSalesClosed_v
+
+File example: C185713_ServiceSalesClosed_All_*.csv
+
+Fields to use
+
+ronumber
+
+vin
+
+opendate
+
+closedate ← authoritative recon completion date
+
+rostatuscode (optional)
+
+📘 Dictionary reference:
+
+CloseDate = “Closed date of repair order.”
+
+Service RO – Line Details (Recon Identification)
+
+Table / CSV
+
+ServiceSalesDetailsClosed_v
+
+File example: C185713_ServiceSalesDetailsClosed_All_*.csv
+
+Fields to use
+
+ronumber
+
+opcode
+
+opcodedescription (optional)
+
+📘 Dictionary reference:
+
+OpCode = “Op-code for the labor operation.”
+
+2️⃣ Recon Identification Rule (CRITICAL)
+
+A repair order is considered reconditioning ONLY IF:
+
+ServiceSalesDetailsClosed.opcode = 'UCI'
+
+
+Do NOT infer recon from:
+
+internal pay flags
+
+RO status
+
+header-level opcode counts
+
+Recon must be identified at the RO line-item level
+
+3️⃣ “Last RO Only” – Correct Interpretation
+
+“Last RO only” means:
+
+For a given VIN, find all CLOSED ROs where:
+
+At least one line has opcode = 'UCI'
+
+From that filtered set, select the RO with the MAX(closedate)
+
+That RO’s closedate is the Recon Complete Date
+
+⚠️ Do NOT:
+
+Pick the latest RO regardless of opcode
+
+Use open ROs for recon completion
+
+Use RO detail dates (header close date only)
+
+4️⃣ Recon Calculation (Final, Locked)
+
+For each vehicle in inventory:
+
+Recon Start
+InventoryVehicle.entrydate
+
+Recon End
+MAX(ServiceSalesClosed.closedate)
+WHERE opcode = 'UCI'
+
+Recon Days
+DATEDIFF(days, entrydate, recon_end_date)
+
+5️⃣ Recon Status Rules
+
+Assign exactly one status per vehicle:
+
+COMPLETE
+
+A closed RO exists with opcode = 'UCI'
+
+Recon days calculated as above
+
+IN_PROGRESS
+
+No closed recon RO exists
+
+An open RO exists with opcode = 'UCI'
+(from ServiceSalesDetailsOpen + ServiceSalesOpen)
+
+NO_RECON_FOUND
+
+No open or closed RO contains opcode = 'UCI'
+
+6️⃣ Join Path (Must Be Exact)
+
+All joins must follow this path:
+
+InventoryVehicle.vin
+  → ServiceSalesClosed.vin
+    → ServiceSalesDetailsClosed.ronumber
+
+
+VIN must be the full VIN, never last-8
+
+ronumber is the only valid join between RO headers and RO details
+
+7️⃣ File Recognition & Processing Rules
+
+File identification by name keywords is acceptable:
+
+Inventory → inventory
+
+Closed ROs → salesclosed
+
+Open ROs → salesopen
+
+Details → detailsclosed / detailsopen
+
+App must:
+
+process only new files
+
+log import timestamp per file
+
+avoid mixing partial runs silently
+
+8️⃣ Dashboard Validation Mode (IMPORTANT)
+
+While validating correctness:
+
+DO NOT hide COMPLETE vehicles
+
+Display:
+
+recon start date
+
+recon end date
+
+recon RO number
+
+recon days
+
+Once validated, hiding COMPLETE can be re-enabled.
+
+9️⃣ Sanity Checks Engineer Should Perform
+
+Before marking “done,” confirm at least 3 known vehicles:
+
+Inventory entrydate matches what the business expects
+
+The recon RO shown actually contains a UCI line
+
+Recon days match manual spreadsheet logic
+
+10️⃣ Summary (Non-Negotiables)
+
+Recon OP code = UCI
+
+Recon start date = InventoryVehicle.entrydate
+
+Recon end date = last CLOSED RO with opcode UCI
+
+No heuristics, no counts, no assumptions

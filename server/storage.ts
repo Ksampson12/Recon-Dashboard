@@ -81,9 +81,6 @@ export class DatabaseStorage implements IStorage {
     }
     if (filters.status && filters.status !== "All") {
       conditions.push(eq(factReconVehicles.reconStatus, filters.status as any));
-    } else {
-      // Default: exclude COMPLETE to show only "in recon" vehicles
-      conditions.push(sql`${factReconVehicles.reconStatus} != 'COMPLETE'`);
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
@@ -195,7 +192,7 @@ export class DatabaseStorage implements IStorage {
     
     await db.execute(sql`TRUNCATE TABLE ${factReconVehicles}`);
 
-    // This complex query does the "Last RO with OP 100" logic
+    // This complex query does the "Last RO with OP UCI" logic
     await db.execute(sql`
       INSERT INTO fact_recon_vehicles (
         vin, stock_no, entry_date, lot_location, year, make, model, mileage, sold_date,
@@ -204,13 +201,13 @@ export class DatabaseStorage implements IStorage {
       SELECT 
         i.vin, i.stock_no, i.entry_date, i.lot_location, i.year, i.make, i.model, i.mileage, i.sold_date,
         
-        -- Logic for last Recon RO
+        -- Logic for last Recon RO (Locked to UCI only)
         recon.ro_number as last_recon_ro_number,
         recon.close_date as last_recon_close_date,
         
-        -- Recon Days
+        -- Recon Days (DATEDIFF equivalent in PG)
         CASE 
-          WHEN recon.close_date IS NOT NULL THEN (recon.close_date - i.entry_date)
+          WHEN recon.close_date IS NOT NULL THEN (recon.close_date::date - i.entry_date::date)
           ELSE NULL 
         END as recon_days,
 
@@ -223,13 +220,13 @@ export class DatabaseStorage implements IStorage {
 
       FROM inventory_vehicles i
       
-      -- Join to find the LATEST closed recon RO (Op Code 100 or UCI)
+      -- Join to find the LATEST closed recon RO (Op Code UCI only)
       LEFT JOIN LATERAL (
         SELECT ro.ro_number, ro.close_date
         FROM service_ros ro
         JOIN service_ro_details d ON ro.ro_number = d.ro_number
         WHERE ro.vin = i.vin 
-          AND (d.op_code = '100' OR d.op_code = 'UCI')
+          AND d.op_code = 'UCI'
           AND ro.close_date IS NOT NULL
         ORDER BY ro.close_date DESC
         LIMIT 1
@@ -241,7 +238,7 @@ export class DatabaseStorage implements IStorage {
         FROM service_ros ro
         JOIN service_ro_details d ON ro.ro_number = d.ro_number
         WHERE ro.vin = i.vin 
-          AND (d.op_code = '100' OR d.op_code = 'UCI')
+          AND d.op_code = 'UCI'
           AND ro.close_date IS NULL
         LIMIT 1
       ) open_recon ON true

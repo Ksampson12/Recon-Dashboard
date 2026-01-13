@@ -30,12 +30,8 @@ export function useVehicles(filters?: {
       const params = new URLSearchParams();
       if (filters?.search) params.append("search", filters.search);
       
-      // Force filter for only IN_PROGRESS or NO_RECON_FOUND if we want "only vehicles in recon"
-      // or just ensure the default filter doesn't include COMPLETE.
-      // Based on user request "I only want the vehicles that are in recon", 
-      // we should probably default the status to IN_PROGRESS or filter out COMPLETE.
-      const statusFilter = filters?.status || "IN_PROGRESS";
-      params.append("status", statusFilter);
+      // Default: show ALL vehicles during validation mode per instructions
+      if (filters?.status) params.append("status", filters.status);
       
       if (filters?.location && filters.location !== "ALL") params.append("location", filters.location);
       if (filters?.sortBy) params.append("sortBy", filters.sortBy);
