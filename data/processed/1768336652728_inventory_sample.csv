@@ -1,0 +1,6 @@
+vin,stockno,entrydate,year,make,model,mileage,lotlocation,solddate
+VIN001,STK001,2023-10-01,2020,Toyota,Camry,45000,Lot A,
+VIN002,STK002,2023-10-05,2021,Honda,Civic,30000,Lot B,
+VIN003,STK003,2023-10-10,2019,Ford,F-150,60000,Lot A,
+VIN004,STK004,2023-10-15,2022,Tesla,Model 3,15000,Lot C,
+VIN005,STK005,2023-10-20,2018,Chevrolet,Malibu,50000,Lot B,2023-11-01
