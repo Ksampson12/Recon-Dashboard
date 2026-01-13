@@ -81,6 +81,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (filters.status && filters.status !== "All") {
       conditions.push(eq(factReconVehicles.reconStatus, filters.status as any));
+    } else {
+      // Default: exclude COMPLETE to show only "in recon" vehicles
+      conditions.push(sql`${factReconVehicles.reconStatus} != 'COMPLETE'`);
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;

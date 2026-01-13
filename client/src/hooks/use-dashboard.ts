@@ -29,7 +29,14 @@ export function useVehicles(filters?: {
       // Build query string manually or use URLSearchParams
       const params = new URLSearchParams();
       if (filters?.search) params.append("search", filters.search);
-      if (filters?.status) params.append("status", filters.status);
+      
+      // Force filter for only IN_PROGRESS or NO_RECON_FOUND if we want "only vehicles in recon"
+      // or just ensure the default filter doesn't include COMPLETE.
+      // Based on user request "I only want the vehicles that are in recon", 
+      // we should probably default the status to IN_PROGRESS or filter out COMPLETE.
+      const statusFilter = filters?.status || "IN_PROGRESS";
+      params.append("status", statusFilter);
+      
       if (filters?.location && filters.location !== "ALL") params.append("location", filters.location);
       if (filters?.sortBy) params.append("sortBy", filters.sortBy);
 
