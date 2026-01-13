@@ -1,0 +1,368 @@
+Recon Dashboard App Blueprint (CSV Drop → Dashboard)
+Goal
+
+Build an internal web app that produces a Used Vehicle Reconditioning Dashboard by ingesting DMS CSV exports placed into a known folder. The user should only need to drop the CSV files into the right location, and the app automatically updates the dashboard.
+
+Definition of Recon Time
+
+Recon Time = (Recon Complete Date) − (Inventory Entry Date)
+
+Inventory Entry Date: InventoryVehicle.entrydate
+
+Recon Complete Date (service-only, no detailing yet):
+
+Use OP code = 100
+
+Only consider the last (most recent) recon RO for the vehicle
+
+Recon Complete Date = closedate of that last recon RO
+
+If a vehicle has multiple recon-related ROs (OP=100), only the most recent one counts.
+
+Data Inputs
+Files to ingest (CSV)
+
+These are the required CSV exports and their expected columns:
+
+1) Inventory vehicles (anchor)
+
+File: InventoryVehicle export
+Required columns:
+
+vin
+
+stockno
+
+entrydate
+
+year
+
+make (or makenameupper)
+
+model
+
+mileage
+
+lotlocation
+
+Optional: solddate / vehiclesolddate
+
+2) Service RO header: closed
+
+File: ServiceSalesClosed export
+Required columns:
+
+ronumber
+
+vin
+
+opendate
+
+closedate
+
+Optional: rostatuscode
+
+3) Service RO detail lines: closed (for OP codes)
+
+File: ServiceSalesDetailsClosed export
+Required columns:
+
+ronumber
+
+opcode
+
+Optional: opcodedescription
+
+4) Service RO header: open (optional for completeness)
+
+File: ServiceSalesOpen export (optional for “currently in recon” visibility)
+Required columns:
+
+ronumber
+
+vin
+
+opendate
+
+Optional: rostatuscode
+
+5) Service RO detail lines: open (optional for completeness)
+
+File: ServiceSalesDetailsOpen export (optional)
+Required columns:
+
+ronumber
+
+opcode
+
+MVP can be built with Inventory + Closed RO Header + Closed RO Details.
+Open files improve “in-progress recon” visibility.
+
+File Drop and Processing
+Folder convention
+
+Engineer should implement a “drop zone” folder:
+
+./data/incoming/ → user drops CSVs here
+
+./data/processed/ → app archives successfully processed CSVs
+
+./data/rejected/ → app moves invalid/failed files here (with an error log)
+
+Ingestion triggers
+
+Choose one:
+
+A scheduled job (every 5–15 minutes)
+
+A file watcher (recommended for fast updates)
+
+Processing steps
+
+For each new CSV:
+
+Identify file type by filename pattern OR column signature.
+
+Validate required columns exist.
+
+Load into database staging table.
+
+Upsert into core tables.
+
+Recompute recon metrics (incremental if possible, full recompute acceptable for MVP).
+
+Archive file to processed/ (store metadata like row count + hash).
+
+Data Model (Database)
+
+Use Postgres (recommended). SQLite is acceptable for MVP, but Postgres is better.
+
+Core tables
+core_inventory_vehicle
+
+vin (PK or indexed)
+
+stockno
+
+entrydate (date)
+
+year
+
+make
+
+model
+
+mileage
+
+lotlocation
+
+solddate (nullable)
+
+core_service_ro_closed
+
+ronumber (PK or indexed)
+
+vin (indexed)
+
+opendate
+
+closedate
+
+rostatuscode (nullable)
+
+core_service_ro_detail_closed
+
+ronumber (indexed)
+
+opcode (indexed)
+
+opcodedescription (nullable)
+
+(Optional for in-progress view)
+
+core_service_ro_open
+
+core_service_ro_detail_open
+
+Derived tables (computed)
+fact_recon_vehicle
+
+One row per VIN/stock (current computed recon metrics):
+
+vin
+
+stockno
+
+entrydate
+
+lotlocation
+
+year
+
+make
+
+model
+
+mileage
+
+Recon outputs:
+
+last_recon_ronumber (the latest RO that contains OP=100)
+
+last_recon_closedate
+
+recon_days = last_recon_closedate - entrydate (integer)
+
+recon_status enum:
+
+NO_RECON_FOUND
+
+IN_PROGRESS (if open recon RO exists and no close yet)
+
+COMPLETE
+
+Useful audit fields:
+
+computed_at
+
+source_inventory_file_date (optional)
+
+source_service_file_date (optional)
+
+etl_import_log
+
+import_id
+
+file_name
+
+file_type
+
+ingested_at
+
+row_count
+
+status (SUCCESS/FAILED)
+
+error_message (nullable)
+
+file_hash (optional)
+
+Recon Logic (OP=100, last RO only)
+Step A: Identify recon-related ROs
+
+Recon-related closed ROs are those where:
+
+RO exists in core_service_ro_closed
+
+There is at least one row in core_service_ro_detail_closed with:
+
+opcode = 100
+
+Step B: Pick “last recon RO”
+
+For each VIN:
+
+Find all recon-related closed ROs for that VIN
+
+Select the one with the maximum closedate
+
+That RO is the last recon RO
+
+Step C: Compute recon time
+
+For each vehicle in inventory:
+
+If last recon RO exists:
+
+recon_days = (last_recon_closedate - entrydate).days
+
+recon_status = COMPLETE
+
+Else:
+
+if optional open recon exists (OP=100 on open RO details):
+
+recon_status = IN_PROGRESS
+
+else:
+
+recon_status = NO_RECON_FOUND
+
+Edge-case handling (MVP rules)
+
+If entrydate is null → exclude from dashboard and flag data quality issue.
+
+If last_recon_closedate < entrydate → flag as anomaly (don’t silently “fix”).
+
+If vehicle sold (solddate exists) and no recon complete → still display; mark “Sold before recon complete” (optional).
+
+Dashboard Requirements
+Primary view: Recon Board
+
+Filterable table showing:
+
+Location (lotlocation)
+
+Inventory Date (entrydate)
+
+Stock # (stockno)
+
+VIN (show last 8 only in UI; store full VIN)
+
+Year / Make / Model
+
+Mileage
+
+Recon Status (No recon found / In progress / Complete)
+
+Last Recon RO #
+
+Last Recon Close Date
+
+Recon Days
+
+Sorting / filtering
+
+Filter by lotlocation
+
+Filter by recon status
+
+Sort by recon days (descending)
+
+Search by stock # or VIN last 8
+
+KPI cards (top of page)
+
+Average recon days (complete vehicles)
+
+Median recon days
+
+Count in progress
+
+Count no recon found
+
+“Over X days” count (configurable threshold)
+
+Drill-down: Vehicle detail page
+
+For a selected VIN/stock:
+
+Show inventory info (entrydate, mileage, etc.)
+
+Show the last recon RO chosen (RO #, close date)
+
+Show evidence: OP code 100 line exists (display opcode / description)
+
+Show any anomalies
+
+UX Workflow (User Perspective)
+
+User receives daily/regular DMS exports.
+
+User places CSV files into ./data/incoming/ (or a network share path).
+
+App detects files and updates.
+
+User opens dashboard URL and sees refreshed recon data.
+
+No manual spreadsheet entry.
