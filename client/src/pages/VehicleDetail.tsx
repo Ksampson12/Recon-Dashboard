@@ -146,11 +146,11 @@ export default function VehicleDetail() {
                       </thead>
                       <tbody className="divide-y divide-border/30">
                         {ro.details.map((line, idx) => (
-                          <tr key={idx} className={`${line.opCode === '100' ? 'bg-yellow-50/50' : ''}`}>
+                          <tr key={idx} className={`${(line.opCode === '100' || line.opCode === 'UCI') ? 'bg-yellow-50/50' : ''}`}>
                             <td className="py-2 font-mono text-xs">{line.opCode}</td>
                             <td className="py-2 text-muted-foreground">
                               {line.description}
-                              {line.opCode === '100' && <span className="ml-2 text-xs font-bold text-amber-600">(Recon Trigger)</span>}
+                              {(line.opCode === '100' || line.opCode === 'UCI') && <span className="ml-2 text-xs font-bold text-amber-600">(Recon Trigger)</span>}
                             </td>
                           </tr>
                         ))}

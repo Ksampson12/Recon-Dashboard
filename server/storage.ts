@@ -220,13 +220,13 @@ export class DatabaseStorage implements IStorage {
 
       FROM inventory_vehicles i
       
-      -- Join to find the LATEST closed recon RO (Op Code 100)
+      -- Join to find the LATEST closed recon RO (Op Code 100 or UCI)
       LEFT JOIN LATERAL (
         SELECT ro.ro_number, ro.close_date
         FROM service_ros ro
         JOIN service_ro_details d ON ro.ro_number = d.ro_number
         WHERE ro.vin = i.vin 
-          AND d.op_code = '100'
+          AND (d.op_code = '100' OR d.op_code = 'UCI')
           AND ro.close_date IS NOT NULL
         ORDER BY ro.close_date DESC
         LIMIT 1
@@ -238,7 +238,7 @@ export class DatabaseStorage implements IStorage {
         FROM service_ros ro
         JOIN service_ro_details d ON ro.ro_number = d.ro_number
         WHERE ro.vin = i.vin 
-          AND d.op_code = '100'
+          AND (d.op_code = '100' OR d.op_code = 'UCI')
           AND ro.close_date IS NULL
         LIMIT 1
       ) open_recon ON true
