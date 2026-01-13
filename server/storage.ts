@@ -195,7 +195,11 @@ export class DatabaseStorage implements IStorage {
     
     await db.execute(sql`TRUNCATE TABLE ${factReconVehicles}`);
 
-    // This complex query does the "Last RO with OP UCI" logic
+    // Clear existing data (this will also delete from fact_recon_vehicles due to constraints if any,
+    // but we'll truncate it explicitly)
+    await db.execute(sql`TRUNCATE TABLE ${factReconVehicles}`);
+
+    // This complex query does the "Last RO with OP UCI" logic with normalization
     await db.execute(sql`
       INSERT INTO fact_recon_vehicles (
         vin, stock_no, entry_date, lot_location, year, make, model, mileage, sold_date,
@@ -228,7 +232,7 @@ export class DatabaseStorage implements IStorage {
         SELECT ro.ro_number, ro.close_date
         FROM service_ros ro
         JOIN service_ro_details d ON ro.ro_number = d.ro_number
-        WHERE ro.vin = i.vin 
+        WHERE UPPER(TRIM(ro.vin)) = UPPER(TRIM(i.vin))
           AND d.op_code = 'UCI'
           AND ro.close_date IS NOT NULL
         ORDER BY ro.close_date DESC
@@ -240,11 +244,14 @@ export class DatabaseStorage implements IStorage {
         SELECT ro.ro_number
         FROM service_ros ro
         JOIN service_ro_details d ON ro.ro_number = d.ro_number
-        WHERE ro.vin = i.vin 
+        WHERE UPPER(TRIM(ro.vin)) = UPPER(TRIM(i.vin))
           AND d.op_code = 'UCI'
           AND ro.close_date IS NULL
         LIMIT 1
       ) open_recon ON true
+      
+      -- Only include units where SoldDate IS NULL
+      WHERE i.sold_date IS NULL
     `);
   }
 }

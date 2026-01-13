@@ -76,6 +76,18 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Data as of section */}
+      {stats?.lastIngestLogs && stats.lastIngestLogs.length > 0 && (
+        <div className="flex flex-wrap gap-4 px-1">
+          {stats.lastIngestLogs.map((log: any) => (
+            <div key={log.id} className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded border border-border/50">
+              <span className="font-semibold uppercase mr-1">{log.fileType.replace('_', ' ')}:</span>
+              {format(new Date(log.timestamp), 'MMM d, h:mm a')}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KPICard 

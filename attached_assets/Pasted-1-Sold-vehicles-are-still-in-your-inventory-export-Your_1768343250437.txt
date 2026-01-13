@@ -1,0 +1,110 @@
+1) Sold vehicles are still in your “inventory” export
+
+Your InventoryVehicle file includes lots of units with SoldDate populated. If the app treats “InventoryVehicle = active inventory,” it will show cars you consider “should not be in there.”
+
+Fix rule (recommended for the board):
+
+Default board should include only units where:
+
+SoldDate IS NULL (or VehicleSoldDate IS NULL)
+
+Optionally add a toggle: “Show Sold Units”
+
+This one change usually explains “why are these cars on the recon board?”
+
+2) VIN normalization mismatch (silent join failures)
+
+Even small formatting differences break joins and cause “missing vehicles.”
+
+Engineer must normalize VIN everywhere:
+
+vin_norm = UPPER(TRIM(vin))
+
+Use vin_norm for joins across:
+
+InventoryVehicle ↔ ServiceSalesOpen/Closed
+
+Also make sure the app is not using last-8 VIN for joins (last-8 is display only).
+
+3) You changed the recon trigger to UCI, but CLOSED recon evidence may still be in other opcodes
+
+You confirmed recon OP code is UCI — great — but if some recon work historically (or for certain departments) closes under another opcode (like 100), then those cars will look “missing” when filtering to UCI only.
+
+What to do right now (without changing your business definition):
+
+Keep recon trigger = UCI as the primary rule
+
+Add a debugging report/table in the app:
+
+“Units with RO activity but no UCI found”
+
+show top opcodes for those ROs
+This will quickly prove whether “missing” units are because recon isn’t coded as UCI in service data for those cars.
+
+If stakeholders insist “UCI is the only recon code,” then missing units means: service didn’t code recon lines as UCI (data/process issue), not an app issue.
+
+4) “Last RO only” implemented incorrectly
+
+Correct interpretation is:
+
+Find ROs whose RO DETAILS contain opcode = 'UCI'
+
+Join those ROs to RO header (open/closed)
+
+Pick the recon RO with the latest CloseDate (for COMPLETE)
+
+Recon End Date = that CloseDate
+
+Wrong implementations that cause bad results:
+
+Picking the last RO overall (ignoring UCI)
+
+Filtering using header “opcode count” fields (those are counts, not the opcode)
+
+Using open ROs to compute end date
+
+5) File-set timing mismatch (you’re ingesting different “as-of” snapshots)
+
+Your files are from different run times/dates (Inventory Jan 11, Closed Jan 12, Open Jan 13). That’s not “wrong,” but it can cause temporary gaps:
+
+inventory shows a car, but the matching service RO export hasn’t arrived yet
+
+or open/closed sets don’t line up in the same snapshot
+
+Fix:
+
+Display “Data as of” timestamps per source on the dashboard
+
+Or process as a “batch” (only compute after all expected files for the day are present)
+
+The correct join logic (engineer checklist)
+
+To guarantee “vehicles from inventory + opcodes from service”:
+
+Start with InventoryVehicle (anchor)
+
+optionally filter SoldDate IS NULL
+
+Find recon ROs from details
+
+ServiceSalesDetailsClosed where opcode = 'UCI' → get ronumber
+
+(and for in-progress) ServiceSalesDetailsOpen where opcode = 'UCI' → get ronumber
+
+Join recon ROs to RO headers
+
+Details.ronumber → Header.ronumber
+
+Header gives VIN + open/close dates
+
+Join RO header VIN back to inventory VIN
+
+Use normalized VINs
+
+Compute
+
+COMPLETE: latest closedate among recon closed ROs
+
+IN_PROGRESS: exists open recon RO and no complete
+
+NO_RECON_FOUND: none
