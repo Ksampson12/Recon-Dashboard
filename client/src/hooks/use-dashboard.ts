@@ -30,8 +30,9 @@ export function useVehicles(filters?: {
       const params = new URLSearchParams();
       if (filters?.search) params.append("search", filters.search);
       
-      // Default: show ALL vehicles during validation mode per instructions
-      if (filters?.status) params.append("status", filters.status);
+      // Filter for only IN_PROGRESS or NO_RECON_FOUND to show "only vehicles in recon"
+      const statusFilter = filters?.status || "IN_PROGRESS";
+      params.append("status", statusFilter);
       
       if (filters?.location && filters.location !== "ALL") params.append("location", filters.location);
       if (filters?.sortBy) params.append("sortBy", filters.sortBy);

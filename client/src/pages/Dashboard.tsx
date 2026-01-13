@@ -198,9 +198,9 @@ export default function Dashboard() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <span className={`font-mono font-bold ${
-                        (vehicle.reconDays || 0) > 10 ? 'text-red-600' : 'text-foreground'
+                        (vehicle.reconDays ?? (vehicle.entryDate ? Math.floor((new Date().getTime() - new Date(vehicle.entryDate).getTime()) / (1000 * 60 * 60 * 24)) : 0)) > 10 ? 'text-red-600' : 'text-foreground'
                       }`}>
-                        {vehicle.reconDays ?? '-'}
+                        {vehicle.reconDays ?? (vehicle.entryDate ? Math.floor((new Date().getTime() - new Date(vehicle.entryDate).getTime()) / (1000 * 60 * 60 * 24)) : '-')}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right text-muted-foreground font-mono text-xs">
