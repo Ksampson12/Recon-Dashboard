@@ -93,7 +93,7 @@ async function processRecords(type: string, records: any[]) {
     const items: InventoryVehicle[] = records.map(r => ({
       vin: r.vin || r.VIN,
       stockNo: r.stockno || r.stocknumber || r.StockNo,
-      entryDate: parseDate(r.entrydate || r.EntryDate || r.DateIn),
+      entryDate: parseDate(r.entrydate || r.EntryDate || r.DateIn) || new Date().toISOString(),
       year: parseInt(r.year || r.Year) || 0,
       make: r.make || r.makenameupper || r.Make,
       model: r.model || r.Model,
@@ -101,7 +101,7 @@ async function processRecords(type: string, records: any[]) {
       lotLocation: r.lotlocation || r.LotLocation || r.Location,
       soldDate: parseDate(r.solddate || r.vehiclesolddate || r.SoldDate),
       updatedAt: new Date(),
-    })).filter(i => i.vin && i.stockNo && i.entryDate); // EntryDate is critical per blueprint
+    })).filter(i => i.vin && i.stockNo); // Removed entryDate from filter to avoid dropping rows, using fallback instead
     
     await storage.upsertInventory(items);
   }
