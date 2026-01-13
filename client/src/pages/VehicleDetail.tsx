@@ -2,7 +2,7 @@ import { useRoute, Link } from "wouter";
 import { useVehicleDetail } from "@/hooks/use-dashboard";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
-import { Loader2, ArrowLeft, Calendar, Gauge, MapPin, FileText, CheckCircle2 } from "lucide-react";
+import { Loader2, ArrowLeft, Calendar, Gauge, MapPin, FileText, CheckCircle2, Clock } from "lucide-react";
 import { format } from "date-fns";
 
 export default function VehicleDetail() {

@@ -29,7 +29,7 @@ export function useVehicles(filters?: {
       // Build query string manually or use URLSearchParams
       const params = new URLSearchParams();
       if (filters?.search) params.append("search", filters.search);
-      if (filters?.status && filters.status !== "ALL") params.append("status", filters.status);
+      if (filters?.status) params.append("status", filters.status);
       if (filters?.location && filters.location !== "ALL") params.append("location", filters.location);
       if (filters?.sortBy) params.append("sortBy", filters.sortBy);
 

@@ -3,7 +3,7 @@ import type { Server } from "http";
 import multer from "multer";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
-import { processFiles } from "./ingest";
+import { processFiles } from "./ingest.js";
 import { z } from "zod";
 import fs from "fs";
 import path from "path";

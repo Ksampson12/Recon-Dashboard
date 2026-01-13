@@ -162,7 +162,7 @@ export class DatabaseStorage implements IStorage {
     // Just insert for now, simpler than diffing lines. 
     // In a real app we might delete existing lines for the RO first.
     // For MVP, assume we append or replace. Let's delete old lines for these ROs then insert.
-    const roNumbers = [...new Set(items.map(i => i.roNumber))];
+    const roNumbers = Array.from(new Set(items.map(i => i.roNumber)));
     if (roNumbers.length > 0) {
       await db.delete(serviceRoDetails).where(sql`${serviceRoDetails.roNumber} IN ${roNumbers}`);
       await db.insert(serviceRoDetails).values(items);
