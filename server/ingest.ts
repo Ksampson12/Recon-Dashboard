@@ -73,6 +73,7 @@ export async function processFiles() {
 function detectFileType(filename: string): string | null {
   const name = filename.toLowerCase();
   if (name.includes("inventory")) return "INVENTORY";
+  // More robust matching for DMS patterns like "ServiceSalesClosed"
   if (name.includes("salesclosed") || (name.includes("service") && name.includes("closed") && !name.includes("detail"))) return "RO_CLOSED";
   if (name.includes("detailsclosed") || (name.includes("service") && name.includes("details") && name.includes("closed"))) return "RO_CLOSED_DETAILS";
   if (name.includes("salesopen") || (name.includes("service") && name.includes("open") && !name.includes("detail"))) return "RO_OPEN";

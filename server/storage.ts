@@ -46,7 +46,6 @@ export class DatabaseStorage implements IStorage {
   async getDashboardStats(): Promise<DashboardStats> {
     const stats = await db.select({
       avg: sql<number>`avg(${factReconVehicles.reconDays})`,
-      // median not strictly standard in all pg versions without extensions, using avg for now or simple approx
       countInProgress: count(sql`CASE WHEN ${factReconVehicles.reconStatus} = 'IN_PROGRESS' THEN 1 END`),
       countNoRecon: count(sql`CASE WHEN ${factReconVehicles.reconStatus} = 'NO_RECON_FOUND' THEN 1 END`),
       countCompleted: count(sql`CASE WHEN ${factReconVehicles.reconStatus} = 'COMPLETE' THEN 1 END`),
@@ -54,9 +53,15 @@ export class DatabaseStorage implements IStorage {
     }).from(factReconVehicles);
 
     const row = stats[0];
+    
+    // Explicitly check for total vehicles to debug
+    const totalVehicles = await db.select({ count: count() }).from(factReconVehicles);
+    console.log(`Dashboard Stats Debug: Total Vehicles in Fact Table: ${totalVehicles[0].count}`);
+    console.log(`Dashboard Stats Debug: Stats Row: ${JSON.stringify(row)}`);
+
     return {
-      avgReconDays: Number(row.avg) || 0,
-      medianReconDays: 0, // Placeholder
+      avgReconDays: Math.round(Number(row.avg) || 0),
+      medianReconDays: 0,
       countInProgress: Number(row.countInProgress) || 0,
       countNoRecon: Number(row.countNoRecon) || 0,
       countCompleted: Number(row.countCompleted) || 0,

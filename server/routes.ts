@@ -70,24 +70,24 @@ export async function registerRoutes(
   });
 
   app.post(api.ingest.upload.path, upload.array('files'), async (req, res) => {
-    // Multer saves to data/incoming/, which is where processFiles looks.
-    // So we just need to confirm upload and maybe trigger processing.
     if (!req.files || (req.files as any[]).length === 0) {
       return res.status(400).json({ message: "No files uploaded" });
     }
 
-    // Rename files to preserve original names (multer hashes them)
-    // so our processor can recognize them by name pattern
     const files = req.files as Express.Multer.File[];
+    console.log(`Received ${files.length} files for upload`);
+    
     for (const file of files) {
       const targetPath = path.join("data/incoming", file.originalname);
+      console.log(`Saving file: ${file.originalname} to ${targetPath}`);
       fs.renameSync(file.path, targetPath);
     }
     
-    // Optional: Auto-trigger processing
-    await processFiles();
+    // Auto-trigger processing
+    const processed = await processFiles();
+    console.log(`Processed ${processed.length} files successfully`);
     
-    res.json({ message: "Files uploaded and ingestion triggered" });
+    res.json({ message: "Files uploaded and ingestion triggered", count: files.length, processed });
   });
 
   return httpServer;

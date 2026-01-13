@@ -48,7 +48,9 @@ export function useUploadFile() {
       return res.json();
     },
     onSuccess: () => {
-      // Invalidate logs so we see the new file
+      // Invalidate everything to show processed data
+      queryClient.invalidateQueries({ queryKey: [api.dashboard.stats.path] });
+      queryClient.invalidateQueries({ queryKey: [api.dashboard.list.path] });
       queryClient.invalidateQueries({ queryKey: [api.ingest.logs.path] });
     },
   });
