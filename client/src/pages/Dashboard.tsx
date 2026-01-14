@@ -92,7 +92,7 @@ export default function Dashboard() {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <KPICard 
           title="Avg Recon Days" 
           value={stats?.avgReconDays.toFixed(1) || "0.0"} 
@@ -120,13 +120,6 @@ export default function Dashboard() {
           icon={AlertCircle}
           description="> 10 days in recon"
           className="border-l-4 border-l-red-500"
-        />
-        <KPICard 
-          title="Total Recon Cost" 
-          value={`$${(stats?.totalReconCost || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`} 
-          icon={DollarSign}
-          description="Labor + Parts costs"
-          className="border-l-4 border-l-purple-500"
         />
       </div>
 
