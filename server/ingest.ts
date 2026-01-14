@@ -93,8 +93,7 @@ async function processRecords(type: string, records: any[]) {
   if (type === "INVENTORY") {
     // Debug: log first record keys to identify column names
     if (records.length > 0) {
-      console.log("CSV Column Keys:", Object.keys(records[0]));
-      console.log("Sample inventorycompany value:", records[0].inventorycompany, records[0].InventoryCompany);
+      console.log("CSV Column Keys:", Object.keys(records[0]).slice(0, 5).join(', ') + '...');
     }
     const items: InventoryVehicle[] = records.map(r => {
       const stockType = (r.stocktype || r.StockType || "").toUpperCase();
@@ -116,9 +115,6 @@ async function processRecords(type: string, records: any[]) {
       // Only include USED vehicles that are not sold
       const isUsed = i.stockType === "USED";
       const hasVinAndStock = i.vin && i.stockNo;
-      if (!isUsed && i.stockType) {
-        console.log(`Skipping non-USED vehicle: ${i.vin} (stockType: ${i.stockType})`);
-      }
       return hasVinAndStock && isUsed;
     });
     

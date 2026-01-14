@@ -143,21 +143,27 @@ export class DatabaseStorage implements IStorage {
       items.reduce((map, item) => map.set(item.vin, item), new Map<string, InventoryVehicle>()).values()
     );
 
-    await db.insert(inventoryVehicles)
-      .values(uniqueItems)
-      .onConflictDoUpdate({
-        target: inventoryVehicles.vin,
-        set: {
-          stockNo: sql`excluded.stock_no`,
-          stockType: sql`excluded.stock_type`,
-          inventoryCompany: sql`excluded.inventory_company`,
-          entryDate: sql`excluded.entry_date`,
-          lotLocation: sql`excluded.lot_location`,
-          mileage: sql`excluded.mileage`,
-          soldDate: sql`excluded.sold_date`,
-          updatedAt: sql`NOW()`
-        }
-      });
+    // Process in batches of 500 to avoid memory issues
+    const BATCH_SIZE = 500;
+    for (let i = 0; i < uniqueItems.length; i += BATCH_SIZE) {
+      const batch = uniqueItems.slice(i, i + BATCH_SIZE);
+      await db.insert(inventoryVehicles)
+        .values(batch)
+        .onConflictDoUpdate({
+          target: inventoryVehicles.vin,
+          set: {
+            stockNo: sql`excluded.stock_no`,
+            stockType: sql`excluded.stock_type`,
+            inventoryCompany: sql`excluded.inventory_company`,
+            entryDate: sql`excluded.entry_date`,
+            lotLocation: sql`excluded.lot_location`,
+            mileage: sql`excluded.mileage`,
+            soldDate: sql`excluded.sold_date`,
+            updatedAt: sql`NOW()`
+          }
+        });
+    }
+    console.log(`Upserted ${uniqueItems.length} inventory vehicles in batches`);
   }
 
   async upsertRos(items: ServiceRo[]): Promise<void> {
@@ -168,28 +174,42 @@ export class DatabaseStorage implements IStorage {
       items.reduce((map, item) => map.set(item.roNumber, item), new Map<string, ServiceRo>()).values()
     );
 
-    await db.insert(serviceRos)
-      .values(uniqueItems)
-      .onConflictDoUpdate({
-        target: serviceRos.roNumber,
-        set: {
-          closeDate: sql`excluded.close_date`,
-          roStatusCode: sql`excluded.ro_status_code`,
-          updatedAt: sql`NOW()`
-        }
-      });
+    // Process in batches of 500 to avoid memory issues
+    const BATCH_SIZE = 500;
+    for (let i = 0; i < uniqueItems.length; i += BATCH_SIZE) {
+      const batch = uniqueItems.slice(i, i + BATCH_SIZE);
+      await db.insert(serviceRos)
+        .values(batch)
+        .onConflictDoUpdate({
+          target: serviceRos.roNumber,
+          set: {
+            closeDate: sql`excluded.close_date`,
+            roStatusCode: sql`excluded.ro_status_code`,
+            updatedAt: sql`NOW()`
+          }
+        });
+    }
+    console.log(`Upserted ${uniqueItems.length} ROs in batches`);
   }
 
   async upsertRoDetails(items: ServiceRoDetail[]): Promise<void> {
     if (items.length === 0) return;
-    // Just insert for now, simpler than diffing lines. 
-    // In a real app we might delete existing lines for the RO first.
-    // For MVP, assume we append or replace. Let's delete old lines for these ROs then insert.
+    // Delete old lines for these ROs then insert in batches
     const roNumbers = Array.from(new Set(items.map(i => i.roNumber)));
     if (roNumbers.length > 0) {
-      await db.delete(serviceRoDetails).where(sql`${serviceRoDetails.roNumber} IN ${roNumbers}`);
-      await db.insert(serviceRoDetails).values(items);
+      // Delete in batches of 500 RO numbers
+      const BATCH_SIZE = 500;
+      for (let i = 0; i < roNumbers.length; i += BATCH_SIZE) {
+        const batch = roNumbers.slice(i, i + BATCH_SIZE);
+        await db.delete(serviceRoDetails).where(sql`${serviceRoDetails.roNumber} IN ${batch}`);
+      }
+      // Insert in batches of 500
+      for (let i = 0; i < items.length; i += BATCH_SIZE) {
+        const batch = items.slice(i, i + BATCH_SIZE);
+        await db.insert(serviceRoDetails).values(batch);
+      }
     }
+    console.log(`Upserted ${items.length} RO details in batches`);
   }
 
   async recomputeReconMetrics(): Promise<void> {
