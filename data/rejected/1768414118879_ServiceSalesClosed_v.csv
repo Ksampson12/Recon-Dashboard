@@ -1,0 +1,313 @@
+# TABLE: ServiceSalesClosed_v
+# DESCRIPTION: Service Sales Closed - Completed service transactions.
+# FIELD COUNT: 308
+#
+Field Name,Description
+AccountingAccount,Associated Accounting Account
+ActualHours,Sum of actual hours on each labor operation.
+ActualHoursCustomerPay,Actual customer pay hours assigned to labor operations
+ActualHoursInternal,Actual warranty hours assigned to labor operations
+ActualHoursWarranty,Actual internal hours assigned to labor operations
+Address,Address
+ApptDate,Scheduled date for the appointment if the repair order was opened from an appointment.
+ApptFlag,Flag indicating if RO was rolled from an appointment.
+ApptIDs,List of appointment IDs separated by commas.
+ApptTime,Scheduled time for the appointment if the repair order was opened from an appointment.
+BlockIVR,Flag whether IVR active or Customer has blocked the IVR msg
+BookedDate,Date the repair order is booked.
+BookedTime,Time the repair order is booked.
+CashierNo,User ID used when logging onto the DMS.
+"CityStateZip","City, state abbreviation, and ZIP code"
+CloseDate,Closed date of repair order.
+Color,Exterior color
+ComebackFlag,Comeback repair as determined by the SA.
+ContactEmailAddress,E-mail given during writeup in which to contact the customer
+ContactPhoneNumber,Customer contact phone number
+CoreCost,RO Total Core Cost
+CoreSale,RO Total Core Sale
+CustNo,Customer number
+DELETEPIIDATA,Customer marked their PII as deleted
+DamageReportCompleted,Damage Report Completed Flag
+DamageReportId,Master Damage Report ID
+DamageRptEmail,Damage Report Bodyshop E-mail Address
+"DebitLocalTaxControlNumCP","Supplemental tax account number -- customer pay -- debit tax control number for the debit tax account to which the tax amounts in WIP, attribute 36, are posted."
+"DebitLocalTaxControlNumIP","Supplemental tax account number -- internal pay -- debit tax control number for the debit tax account to which the tax amounts in WIP, attribute 36, are posted."
+"DebitLocalTaxControlNumWP","Supplemental tax account number -- warranty pay -- debit tax control number for the debit tax account to which the tax amounts in WIP, attribute 36, are posted."
+"DebitStateTaxControlNumCP","State tax default account number -- customer pay -- debit tax control number for the debit tax account to which the tax amounts in WIP, attribute 36, are posted."
+"DebitStateTaxControlNumIP","State tax default account number -- internal pay -- debit tax control number for the debit tax account to which the tax amounts in WIP, attribute 36, are posted."
+"DebitStateTaxControlNumWP","State tax default account number -- warranty pay -- debit tax control number for the debit tax account to which the tax amounts in WIP, attribute 36, are posted."
+"DebitSupp2TaxControlNumCP","Supplemental2 account number -- customer pay -- debit tax control number for the debit tax account to which the tax amounts in WIP, attribute 36, are posted."
+"DebitSupp2TaxControlNumIP","Supplemental2 account number -- internal pay -- debit tax control number for the debit tax account to which the tax amounts in WIP, attribute 36, are posted."
+"DebitSupp2TaxControlNumWP","Supplemental2 account number -- warranty pay -- debit tax control number for the debit tax account to which the tax amounts in WIP, attribute 36, are posted."
+"DebitSupp3TaxControlNumCP","Supplemental3 account number -- customer pay -- debit tax control number for the debit tax account to which the tax amounts in WIP, attribute 36, are posted."
+"DebitSupp3TaxControlNumIP","Supplemental3 account number -- internal pay -- debit tax control number for the debit tax account to which the tax amounts in WIP, attribute 36, are posted."
+"DebitSupp3TaxControlNumWP","Supplemental3 account number -- warranty pay -- debit tax control number for the debit tax account to which the tax amounts in WIP, attribute 36, are posted."
+"DebitSupp4TaxControlNumCP","Supplemental4 account number -- customer pay -- debit tax control number for the debit tax account to which the tax amounts in WIP, attribute 36, are posted."
+"DebitSupp4TaxControlNumIP","Supplemental4 account number -- internal pay -- debit tax control number for the debit tax account to which the tax amounts in WIP, attribute 36, are posted."
+"DebitSupp4TaxControlNumWP","Supplemental4 account number -- warranty pay -- debit tax control number for the debit tax account to which the tax amounts in WIP, attribute 36, are posted."
+Deductible,Deductible
+DeliveryDate,Delivery date
+EngineNo,Engine number
+EstCompletionDate,Estimated completion date. Used by Dispatching only.
+EstCompletionTime,Estimated completion time. Used by Dispatching only.
+FinalBooker,Booking employee number
+HasCustomerPay,Labor type code contains customer pay
+HasDamageReport,Indicates Damage Report Exists 1 OR 0
+HasHistory,Indicates History Exists 1 OR 0
+HasIP,Labor type code contains internal pay
+HasVQ,Manufacturer code
+HasWP,Labor type code contains warranty pay
+HostItemID,Host Item ID.
+IVRReady,Flag indicating whether RO is ready to generate an IVR call
+IncompleteHoldDescription,Text entered for hold status code of I90.
+LaborCost,Cost of the labor sold for labor operations
+LaborCostCustomerPay,Customer pay cost of the labor sold for labor operations
+LaborCostInternal,Internal cost of the labor sold for labor operations
+LaborCostWarranty,Warranty cost of the labor sold for labor operations
+LaborDiscount,Labor Discount in RO-MLS<90> for the repair order.
+LaborSale,Labor sale amount
+LaborSaleCustomerPay,Customer pay labor sale amount
+LaborSaleInternal,Internal labor sale amount
+LaborSalePostDed,Post-deductible labor sale amount
+LaborSalePostDedCustomer,Post-deductible customer-pay labor sale amount
+LaborSalePostDedInternal,Post-deductible internal-pay labor sale amount
+LaborSalePostDedWarranty,Post-deductible warranty-pay labor sale amount
+LaborSaleWarranty,Warranty labor sale amount
+LastServiceDate,Last Service Date of Vehicle.
+LocalDebitTaxAccountCP,Local Debit Tax Account for Customer Pay.
+LocalDebitTaxAccountIP,Local Debit Tax Account for Internal Pay.
+LocalDebitTaxAccountWP,Local Debit Tax Account for Warranty Pay.
+LocalSalesTaxAccountCP,Local Sales Tax Account for customer pay.
+LocalSalesTaxAccountIP,Local Sales Tax Account for internal pay.
+LocalSalesTaxAccountWP,Local Sales Tax Account for warranty pay.
+LocalSalesTaxJournalCP,Local Tax Journal for customer payment.
+LocalSalesTaxJournalIP,Local Tax Journal for internal payment.
+LocalSalesTaxJournalWP,Local Tax Journal for warranty payment.
+LocalTaxAmountCP,Local Sales Tax Amount for customer pay.
+LocalTaxAmountIP,Local Sales Tax Amount for internal pay.
+LocalTaxAmountWP,Local Sales Tax Amount for warranty pay.
+LocalTaxSourceCompanyCP,Local Tax Source Company for customer pay.
+LocalTaxSourceCompanyIP,Local Tax Source Company for internal pay.
+LocalTaxSourceCompanyWP,Local Tax Source Company for warranty pay.
+LocalTaxTargetCompanyCP,Local Tax Target Company for customer pay.
+LocalTaxTargetCompanyIP,Local Tax Target Company for internal pay.
+LocalTaxTargetCompanyWP,Local Tax Target Company for warranty pay.
+LotLocation,Lot Location of the vehicle.
+Make,Make abbreviation for the vehicle
+Mileage,Mileage-in entered in RO. If pulling from HISTORY then Mileage out will be returned.
+MileageLastVisit,Mileage at last visit. If pulling from HISTORY then NULL will be returned.
+MileageOut,Mileage-out entered in CAS. If pulling from HISTORY then Mileage out will be returned.
+MiscCost,Sum of all cost in RO-MLS<2> for the repair order.
+MiscCostCustomerPay,Customer pay cost of the miscellaneous charges sold for labor operations
+MiscCostInternal,Internal cost of the miscellaneous charges sold for labor operations
+MiscCostWarranty,Warranty cost of the miscellaneous charges sold for labor operations
+MiscSale,Sum of all sale in RO-MLS<3> for the repair order.
+MiscSaleCustomerPay,Customer pay miscellaneous sale amount
+MiscSaleInternal,Internal miscellaneous sale amount
+MiscSaleWarranty,Warranty miscellaneous sale amount
+Model,Model abbreviation for the vehicle
+Name1,Customer Name
+Name2,Customer name2
+NumberofParts,Number of parts on the repair order.
+OPTOUTSELLINGPIIDATA,Customer has blocked the selling of their PII
+OPTOUTSHARINGPIIDATA,Customer has blocked the sharing of their PII
+OpCodeCountCustomerPay,Count of repair orders with labor op-codes for customer pay.
+OpCodeCountInternal,Count of repair orders with labor op-codes for Internal pay.
+OpCodeCountWarranty,Count of repair orders with labor op-codes for Warranty pay.
+OpenDate,Opened date of repair order.
+OpenedTime,Time the repair order is opened.
+OriginAppl,Origin application
+OriginCode,Origin code
+OriginalPromiseDate,Original Promised Date.
+OriginalPromiseTime,Original Promised Time.
+OriginalWaiterFlag,Original Customer wait for repairs flag.
+OtherHours,Sum of other hours on each labor operation.
+OtherHoursCustomerPay,Customer pay other hours on each labor operation.
+OtherHoursInternal,Internal pay other hours on each labor operation.
+OtherHoursWarranty,Warranty pay other hours on each labor operation.
+PartsCost,Cost of the parts sold for labor operations
+PartsCostCustomerPay,Customer pay cost of parts sold for labor operations
+PartsCostInternal,Internal cost of parts sold for labor operations
+PartsCostWarranty,Warranty cost of parts sold for labor operations
+PartsDiscount,Parts Discount in RO-MLS<93> for the repair order.
+PartsHoldDescription,Parts status description
+PartsSale,Amount of parts sold
+PartsSaleCustomerPay,Customer pay parts sale amount
+PartsSaleInternal,Internal parts sale amount
+PartsSalePostDed,Post-deductible parts sale amount
+PartsSalePostDedCustomer,Post-deductible customer-pay parts sale amount
+PartsSalePostDedInternal,Post-deductible internal-pay parts sale amount
+PartsSalePostDedWarranty,Post-deductible warranty-pay parts sale amount
+PartsSaleWarranty,Warranty parts sale amount
+PickItemID,
+PostedDate,Posted date of repair order.
+PriorityFlag,Flag indicating if Priority Value has been overridden.
+PriorityValue,Priority value used to determine when to dispatch the RO.
+PromisedDate,Promised date entered in A/RO/SWR.
+PromisedTime,Promised time entered in A/RO/SWR.
+PurchaseOrderNumber,Manually entered in A/RO/SWR.
+ROComment1,Comments entered in DCM window in PFC.
+ROComment2,Comments entered in DCM window in PFC.
+ROComment3,Comments entered in DCM window in PFC.
+ROComment4,Comments entered in DCM window in PFC.
+ROComment5,Comments entered in DCM window in PFC.
+ROComment6,Comments entered in DCM window in PFC.
+ROComment7,Comments entered in DCM window in PFC.
+ROComment8,Comments entered in DCM window in PFC.
+ROComment9,Comments entered in DCM window in PFC.
+ROHoldDescription,RO.hold.description.
+ROLubeCostCP,Total customer pay labor cost dollars of the MLS charge.
+ROLubeCostIP,Total internal pay labor cost dollars of the MLS charge.
+ROLubeCostWP,Total warranty pay labor cost dollars of the MLS charge.
+ROLubeSaleCP,Total customer pay labor sale dollars of the MLS charge.
+ROLubeSaleIP,Total internal pay labor sale dollars of the MLS charge.
+ROLubeSaleWP,Total warranty pay labor sale dollars of the MLS charge.
+ROMiscCostCP,Total customer pay labor cost dollars of the labor fee.
+ROMiscCostIP,Total internal pay labor cost dollars of the labor fee.
+ROMiscCostWP,Total warranty pay labor cost dollars of the labor fee.
+ROMiscSaleCP,Total customer pay labor sale dollars of the labor fee.
+ROMiscSaleIP,Total internal pay labor sale dollars of the labor fee.
+ROMiscSaleWP,Total warranty pay labor sale dollars of the labor fee.
+RONumber,RO Number.
+ROOverEstimate,Flag indicating if RO Customer Pay Total is greater than Estimate
+ROSaleCP,State tax amount - customer pay
+ROSaleIP,State tax amount - internal pay
+ROSaleWP,State tax amount - warranty pay
+ROStatusCode,Status of the RO from attribute 2 of WIP.
+ROStatusCodeDesc,Status Code description for the repair order.
+ROSubletCostCP,Customer pay labor cost dollars of the MLS charge.
+ROSubletCostIP,Internal pay labor cost dollars of the MLS charge.
+ROSubletCostWP,Warranty pay labor cost dollars of the MLS charge.
+ROSubletSaleCP,Customer pay labor sale dollars of the MLS charge.
+ROSubletSaleIP,Internal pay labor sale dollars of the MLS charge.
+ROSubletSaleWP,Warranty pay labor sale dollars of the MLS charge.
+ROTotalEstimate,Total Estimate for the repair order.
+Remarks,Entered in the Remarks function in A/RO/SWR.
+Rental,Flag indicating if customer is using a rental vehicle.
+RevisedCompletionDate,Revised Completion Date.
+RevisedCompletionTime,Revised Completion Time.
+SORCount,Count of open SORs for the Vehicle.
+SROFlag,Indicates whether the repair order has been added/changed in function SRO. .
+Service,Service Logon that RO was created on.
+ServiceAdvisor,Service Advisor Number entered on RO/SWR screen.
+ServiceAdvisorDepartment,Department code
+ServiceAdvisorTeam,Team number (0-9). Dispatching only uses this number. Null if ROI only.
+ShopChargeCostCustomer,Each customer pay shop charge cost.
+ShopChargeCostInternal,Each internal pay shop charge cost.
+ShopChargeCostWarranty,Each warranty pay shop charge cost.
+ShopChargeDebitAccountCP,Each customer pay shop charge debit account.
+ShopChargeDebitAccountIP,Each internal pay shop charge debit account.
+ShopChargeDebitAccountWP,Each warranty pay shop charge debit account.
+ShopChargeDebitCompanyCP,Each customer pay shop charge Debit Company.
+ShopChargeDebitCompanyIP,Each internal pay shop charge Debit Company.
+ShopChargeDebitCompanyWP,Each warranty pay shop charge Debit Company.
+ShopChargeDebitControlCP,Each customer pay shop charge debit control number.
+ShopChargeDebitControlIP,Each internal pay shop charge debit control number.
+ShopChargeDebitControlWP,Each warranty pay shop charge debit control number.
+ShopChargeJournalCP,Each customer pay shop charge journal.
+ShopChargeJournalIP,Each internal pay shop charge journal.
+ShopChargeJournalWP,Each warranty pay shop charge journal.
+ShopChargeSaleAccountCP,Each customer pay shop charge sale account.
+ShopChargeSaleAccountIP,Each internal pay shop charge sale account.
+ShopChargeSaleAccountWP,Each warranty pay shop charge sale account.
+ShopChargeSaleAmountCP,Each customer pay shop charge sale amount.
+ShopChargeSaleAmountIP,Each internal pay shop charge charge amount.
+ShopChargeSaleAmountWP,Each warranty pay shop charge sale amount.
+ShopChargeSaleCompanyCP,Each customer pay shop charge Sale Company.
+ShopChargeSaleCompanyIP,Each internal pay shop charge Sale Company.
+ShopChargeSaleCompanyWP,Each warranty pay shop charge Sale Company.
+ShopChargeSaleControlCP,Each customer pay shop charge sale control number.
+ShopChargeSaleControlIP,Each internal pay shop charge sale control number.
+ShopChargeSaleControlWP,Each warranty pay shop charge sale control number.
+ShopChargeSourceCompanyCP,Each customer pay shop charge Source Company.
+ShopChargeSourceCompanyIP,Each internal pay shop charge Source Company.
+ShopChargeSourceCompanyWP,Each warranty pay shop charge Source Company.
+ShopSuppliesCost,All shop charge costs for the repair order.
+ShopSuppliesSales,All shop charge sale amounts for the repair order.
+SoldByDealer,Flag indicating if the vehicle was bought from this dealer.
+SoldHours,Sum of sold hours on each labor operation.
+SoldHoursCustomerPay,Customer pay hours sold for labor
+SoldHoursInternal,Internal hours sold for labor
+SoldHoursWarranty,Warranty hours sold for labor
+SourceFile,Source file code
+SpecialCust,Flag indicating if customer needs special treatment.
+StateDebitTaxAccountCP,State Debit Tax Account for Customer Pay.
+StateDebitTaxAccountIP,State Debit Tax Account for Internal Pay.
+StateDebitTaxAccountWP,State Debit Tax Account for Warranty Pay.
+StateSalesTaxAccountCP,State Sales Tax Account for Customer pay.
+StateSalesTaxAccountIP,State Sales Tax Account for internal pay.
+StateSalesTaxAccountWP,State Sales Tax Account for warranty pay.
+StateSalesTaxJournalCP,State Tax Journal for customer payment.
+StateSalesTaxJournalIP,State Tax Journal for internal payment.
+StateSalesTaxJournalWP,State Tax Journal for warranty payment.
+StateTaxAmountCP,State Sales Tax Amount for customer pay.
+StateTaxAmountIP,State Sales Tax Amount for internal pay.
+StateTaxAmountWP,State Sales Tax Amount for warranty pay.
+StateTaxSourceCompanyCP,State Tax Source Company for customer pay.
+StateTaxSourceCompanyIP,State Tax Source Company for internal pay.
+StateTaxSourceCompanyWP,State Tax Source Company for warranty pay.
+StateTaxTargetCompanyCP,State Tax Target Company for customer pay.
+StateTaxTargetCompanyIP,State Tax Target Company for internal pay.
+StateTaxTargetCompanyWP,State Tax Target Company for warranty pay.
+Supp2DebitTaxAcctCP,Supplemental2 Debit Tax Account for Customer Pay.
+Supp2DebitTaxAcctIP,Supplemental2 Debit Tax Account for Internal Pay.
+Supp2DebitTaxAcctWP,Supplemental2 Debit Tax Account for Warranty Pay.
+Supp2SalesTaxAcctCP,Supplemental2 Sales Tax Account for customer pay.
+Supp2SalesTaxAcctIP,Supplemental2 Sales Tax Account for internal pay.
+Supp2SalesTaxAcctWP,Supplemental2 Sales Tax Account for warranty pay.
+Supp2SalesTaxJournalCP,Supplementary2 Tax Journal for customer payment.
+Supp2SalesTaxJournalIP,Supplementary2 Tax Journal for internal payment.
+Supp2SalesTaxJournalWP,Supplementary2 Tax Journal for warranty payment.
+Supp2TaxAmountCP,Supplemental2 Sales Tax Amount for customer pay.
+Supp2TaxAmountIP,Supplemental2 Sales Tax Amount for internal pay.
+Supp2TaxAmountWP,Supplemental2 Sales Tax Amount for warranty pay.
+Supp2TaxSourceCoCP,Supplemental2 Tax Source Company for customer pay.
+Supp2TaxSourceCoIP,Supplemental2 Tax Source Company for internal pay.
+Supp2TaxSourceCoWP,Supplemental2 Tax Source Company for warranty pay.
+Supp2TaxTargetCoCP,Supplemental2 Tax Target Company for customer pay.
+Supp2TaxTargetCoIP,Supplemental2 Tax Target Company for internal pay.
+Supp2TaxTargetCoWP,Supplemental2 Tax Target Company for warranty pay.
+Supp3DebitTaxAcctCP,Supplemental3 Debit Tax Account for Customer Pay.
+Supp3DebitTaxAcctIP,Supplemental3 Debit Tax Account for Internal Pay.
+Supp3DebitTaxAcctWP,Supplemental3 Debit Tax Account for Warranty Pay.
+Supp3SalesTaxAcctCP,Supplemental3 Sales Tax Account for customer pay.
+Supp3SalesTaxAcctIP,Supplemental3 Sales Tax Account for internal pay.
+Supp3SalesTaxAcctWP,Supplemental3 Sales Tax Account for warranty pay.
+Supp3TaxAmountCP,Supplemental3 Sales Tax Amount for customer pay.
+Supp3TaxAmountIP,Supplemental3 Sales Tax Amount for internal pay.
+Supp3TaxAmountWP,Supplemental3 Sales Tax Amount for warranty pay.
+Supp3TaxSourceCoCP,Supplemental3 Tax Source Company for customer pay.
+Supp3TaxSourceCoIP,Supplemental3 Tax Source Company for internal pay.
+Supp3TaxSourceCoWP,Supplemental3 Tax Source Company for warranty pay.
+Supp3TaxTargetCoCP,Supplemental3 Tax Target Company for customer pay.
+Supp3TaxTargetCoIP,Supplemental3 Tax Target Company for internal pay.
+Supp3TaxTargetCoWP,Supplemental3 Tax Target Company for warranty pay.
+Supp4DebitTaxAcctCP,Supplemental4 Debit Tax Account for Customer Pay.
+Supp4DebitTaxAcctIP,Supplemental4 Debit Tax Account for Internal Pay.
+Supp4DebitTaxAcctWP,Supplemental4 Debit Tax Account for Warranty Pay.
+Supp4SalesTaxAcctCP,Supplemental4 Sales Tax Account for customer pay.
+Supp4SalesTaxAcctIP,Supplemental4 Sales Tax Account for internal pay.
+Supp4SalesTaxAcctWP,Supplemental4 Sales Tax Account for warranty pay.
+Supp4TaxAmountCP,Supplemental4 Sales Tax Amount for customer pay.
+Supp4TaxAmountIP,Supplemental4 Sales Tax Amount for internal pay.
+Supp4TaxAmountWP,Supplemental4 Sales Tax Amount for warranty pay.
+Supp4TaxSourceCoCP,Supplemental4 Tax Source Company for customer pay.
+Supp4TaxSourceCoIP,Supplemental4 Tax Source Company for internal pay.
+Supp4TaxSourceCoWP,Supplemental4 Tax Source Company for warranty pay.
+Supp4TaxTargetCoCP,Supplemental4 Tax Target Company for customer pay.
+Supp4TaxTargetCoIP,Supplemental4 Tax Target Company for internal pay.
+Supp4TaxTargetCoWP,Supplemental4 Tax Target Company for warranty pay.
+Tag,Tag number assigned to the vehicle while it is being worked on
+TimeCardHours,Number of timecard hours
+TimeCardHoursCustomerPay,Number of timecard customer pay hours
+TimeCardHoursInternal,Number of timecard internal hours
+TimeCardHoursWarranty,Number of timecard warranty hours
+"TotalAmountDue","CP total CP total(WIP<62,8>) + deductile (WIP<62,9>)"
+TransType,Alternate transportation code.
+TransmissionNo,Transmission model number
+VIN,Vehicle identification number or serial number
+VehID,Vehicle ID on the RO.
+VoidDate,Voided date of repair order.
+WaiterFlag,Customer wait for repairs flag.
+WipPartsAccount,Parts account used by the WIP file.
+Year,Model year of the vehicle

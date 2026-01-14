@@ -1,0 +1,165 @@
+# TABLE: InventoryVehicle_v
+# DESCRIPTION: Inventory Vehicle - Vehicles currently in inventory.
+# FIELD COUNT: 160
+#
+Field Name,Description
+AccountingAccount,Associated Accounting Account
+ActualCashValue,Actual cash value of sold vehicle
+AdvertisedPrice,Advertised price.
+AdvertisedPriceExpDate,Expiration date of Advertised price.
+AdvertisedPriceId,Penalties Due Amount.
+AdvertisedPriceStartDate,Start date of Advertised price.
+Axle,Number of axles
+AxleNo,Axle model number
+Balance,General ledger balance (cost) for the vehicle
+BaseInvoicePrice,Base Invoice Price
+BaseRetailPrice,Base Retail Price
+BillOfLading,Bill of lading number
+BillingDate,Billing date updated in AU or VF
+BodyStyle,Body style
+BrakeSys,Brake System
+CabType,Type of Cab
+Certified,Flag indicating if used vehicle is certified
+Chassis,Chassis Type
+Color,Exterior color
+"CommissionPackAmount","Commission pack amount from attribute 33, VMS-DESC"
+"CommissionPackPercent","Commission pack percentage rate from attribute 34, VMS-DESC"
+CommissionPrice,Base dealership commission cost entered and updated on VMS.
+Country,Country
+CustFlag,Customer Flag
+CustID,PICK file item-id of customer
+CustNo,Customer control number
+CylinderNo,Number of Cylinders
+"DaysBeyondPlan","Number of days beyond the free interest days from attribute 18, VMS-DESC"
+DealNo,Deal number
+DealerDefined1,User defined field #1
+DealerDefined2,User defined field #2
+DealerDefined3,User defined field #3
+DealerDefined4,User defined field #4
+DealerDefined5,User defined field #5
+DealerDefined6,User defined field #6
+DealerDefined7,User defined field #7
+DealerDefined8,User defined field #8
+DealerPrepAmount,Dealer preparation amount
+DealerPrepHours,Number of hours dealer spent preparing the vehicle for sale
+DeleteCode,Delete code
+DeleteDate,Delete date
+DraftAmount,Bank draft amount updated in AU
+EngineDescription,Engine description or code
+EngineNo,Engine number
+EntryDate,Date that the control number is added to file
+ExpectedDeliveryDate,Expected date of delivery to the dealership
+ExpirationTransitDate,Date vehicle should arrive at the dealership
+FleetNo,Vehicles Fleet ID Number
+FreeInterestAmount,Free interest amount
+"FreeInterestDays","Free interest days from attribute 16, VMS-DESC"
+FreeInterestEndDate,End date for free interest amount
+FreeInterestStartDate,Start date for free interest amount
+"FreightIn","Freight-in charges from attribute 19, VMS-DESC"
+"FreightOut","Freight-out charges from attribute 20, VMS-DESC. Updated in AU or VF."
+"FreightTax","Freight tax from attribute 21, VMS-DESC. Updated in AU or VF."
+FrontTire,Front Tire Type
+FuelType,Fuel Type Code.
+FullDescription,Full model line description
+GVW,Gross Vehicle Weight
+HoldBackAmount,Holdback amount
+HostItemID,PICK item ID used by dataextractor for error reporting
+InterestEndDate,End date for total net interest and insurance amounts
+InterestStartDate,Start date for total net interest and insurance amounts
+InteriorColor,Interior color or color code for interior color
+InventoryAcct,Inventory account number
+InventoryComment,Inventory comment updated in AU
+InventoryCompany,Inventory account company
+InventorySourceCode,Code indicating how vehicle came into stock
+InventorySourceName,Name of source where vehicle came from
+InvoiceDate,Invoice date updated in AU or VF
+InvoiceNumber,Invoice number updated in AU
+InvoicePackAmount,Invoice pack amount
+KeyNo,Key Code Number
+LastActivityDate,Last service activity date
+LicenseExpirationDate,Date vehicle registration expires.
+LicenseNo,License Plate Number
+LicenseState,Two digit state or province code.
+LienHolder,Name of Lien Holder
+LotLocation,Vehicle's lot number
+Make,Make abbreviation for the vehicle
+MakeName,Full make name
+MakeNameUpper,Full make name
+Manufacturer,manufacturer's name
+Mileage,Vehicle mileage at last service
+Model,Model abbreviation for the vehicle
+ModelName,Full model name
+ModelNo,Model number
+ModelType,Model type code
+NameCode,Control type
+NewTires,Number of New Tires.
+NumberOfDoors,Number of Doors
+OptionDescriptions,Option descriptions. Correlative to Options.
+Options,Option Codes List
+OrderDate,Date the order was placed with the manufacturer
+OrderNumber,Dealer assigned standard order number
+"OrderPriority","Manufacturer-assigned order priority from attribute 20, VMS-ORDERS"
+"OrderType","Manufacturer-assigned order type from attribute 19, VMS-ORDERS"
+PO,Purchase Order Number
+PenaltyDue,Penalties Due Amount.
+PlantOfManufacture,Plant where vehicle was manufactured
+PostAheadFlag,Post-ahead flag used and updated by the Accounting System
+PreviousOwnerName,Name of Previous owner
+PreviousSaleAmount,Purchase price at the time the vehicle was last sold.
+PreviousYearSold,Year in which the vehicle was last sold.
+Price1,Retail sales price
+Price2,Invoice price
+PrimaryDriverNo,Customer number of the primary driver of the vehicle
+ProdDate,Production Date
+ProductionNo,Production Number
+ProtectedInterestEndDate,End date for protected interest amount
+"ProtectedInterestRate","Protected interest rate from attribute 17, VMS-DESC"
+ProtectedInterestStartDate,Start date for protected interest amount
+ProtectedNetInterest,net protected interest amount
+ProtectedTotalInterest,Total protected interest amount
+ProtectedTotalInterestEndDate,End date for total protected interest amount
+ProtectedTotalInterestStartDat,Start date for total protected interest amount
+RPOCode,RPO code
+RearTire,Rear Tire Type
+ReceivedDate,Date the vehicle was received from the manufacturer
+RestraintSys,Passenger Restraint System
+"RetailPack","Retail pack amount pulled from attribute 28, VMS-DESC. Updated in AU or VF."
+RetailPriceUpdateDate,Last date retail price was changed
+SaleAcct,Sale account number
+SaleCode,Special sale code assigned by the dealership
+SaleCompany,Sale account company
+SalesPerson1,Salesperson #1's control number
+SalesPerson2,Salesperson #2's control number
+SalesmanID,PICK file item-id of salesperson
+ServiceDeleteCode,Service delete code indicating the number of months to retain VEHICLES file record with no activity
+ShippingDate,Date vehicle was shipped to the dealership
+SoldDate,Date vehicle sold
+SoldMileage,Vehicle mileage when sold
+StandardColor,Generic exterior vehicle color
+Status,VMS Status code
+StdEquip1,Standard Equipment Description
+StickerPrice,Sticker Price
+StockNo,Vehicle's stock number
+StockType,Stock type
+SupplementalStickerDate,Date supplemental sticker was last printed
+TotalInsuranceAmount,Total insurance amount
+TotalNetInterest,Total net interest amount
+TotalOptionsCost,Total Options Cost
+TotalOptionsInvoice,Total Options Invoice Amount
+TotalOptionsRetail,Total Options Retail Price
+TransmissionNo,Transmission model number
+TrimLevel,Trim Level
+UnladenWeight,Unladen Weight
+"UsedVehicleData","Used Vehicle Data reference number, a.k.a., certified number for a certified used vehicle."
+VIN,Serial number of the vehicle
+VINMakeCode,VIN make code
+VINModelCode,VIN model code
+VehID,Service internal item-id of vehicle
+VehicleLicenseFee,Vehicle license fee
+VehicleSoldDate,Date vehicle sold
+"VehicleSoldFlag","History update, null = unit has not been counted as sold"
+VehicleStyle,Generic body style
+VlfClass,VLF Class.
+WheelBase,Wheel Base Length
+Wholesale,Flag indicating if vehicle is not available for retail sale
+Year,Model year of the vehicle
