@@ -221,13 +221,13 @@ export class DatabaseStorage implements IStorage {
   async recomputeReconMetrics(): Promise<void> {
     // Core logic:
     // 1. Clear fact table
-    // 2. Only include USED vehicles that have at least one RO with UCI op code
+    // 2. Only include USED vehicles that have at least one RO with UCI or CERT op code
     // 3. Calculate costs from RO details
     
     await db.execute(sql`TRUNCATE TABLE fact_recon_vehicles`);
 
-    // Insert vehicles that have UCI work (either open or closed)
-    // Only USED vehicles, not sold, that have ROs with UCI op code
+    // Insert vehicles that have UCI or CERT work (either open or closed)
+    // Only USED vehicles, not sold, that have ROs with UCI or CERT op code
     await db.execute(sql`
       INSERT INTO fact_recon_vehicles (
         vin, stock_no, inventory_company, entry_date, lot_location, year, make, model, mileage, sold_date,
@@ -237,11 +237,11 @@ export class DatabaseStorage implements IStorage {
       SELECT 
         i.vin, i.stock_no, i.inventory_company, i.entry_date, i.lot_location, i.year, i.make, i.model, i.mileage, i.sold_date,
         
-        -- Logic for last Recon RO with UCI (closed)
+        -- Logic for last Recon RO with UCI or CERT (closed)
         recon.ro_number as last_recon_ro_number,
         recon.close_date as last_recon_close_date,
         
-        -- Recon Days: from entry to UCI close, or days since entry if still in progress
+        -- Recon Days: from entry to recon close, or days since entry if still in progress
         CASE 
           WHEN recon.close_date IS NOT NULL THEN (recon.close_date::date - i.entry_date::date)
           ELSE (CURRENT_DATE - i.entry_date::date)
@@ -260,21 +260,21 @@ export class DatabaseStorage implements IStorage {
 
       FROM inventory_vehicles i
       
-      -- Only include vehicles that have at least one RO with UCI op code
+      -- Only include vehicles that have at least one RO with UCI or CERT op code
       INNER JOIN (
         SELECT DISTINCT UPPER(TRIM(ro.vin)) as vin
         FROM service_ros ro
         JOIN service_ro_details d ON ro.ro_number = d.ro_number
-        WHERE UPPER(d.op_code) = 'UCI'
-      ) has_uci ON UPPER(TRIM(i.vin)) = has_uci.vin
+        WHERE UPPER(d.op_code) IN ('UCI', 'CERT')
+      ) has_recon ON UPPER(TRIM(i.vin)) = has_recon.vin
       
-      -- Join to find the LATEST closed recon RO (Op Code UCI only)
+      -- Join to find the LATEST closed recon RO (Op Code UCI or CERT)
       LEFT JOIN LATERAL (
         SELECT ro.ro_number, ro.close_date
         FROM service_ros ro
         JOIN service_ro_details d ON ro.ro_number = d.ro_number
         WHERE UPPER(TRIM(ro.vin)) = UPPER(TRIM(i.vin))
-          AND UPPER(d.op_code) = 'UCI'
+          AND UPPER(d.op_code) IN ('UCI', 'CERT')
           AND ro.close_date IS NOT NULL
         ORDER BY ro.close_date DESC
         LIMIT 1

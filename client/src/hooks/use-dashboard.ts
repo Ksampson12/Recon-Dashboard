@@ -23,6 +23,8 @@ export function useVehicles(filters?: {
   store?: "1" | "2" | "3"; // 1=ACF, 2=LCF, 3=CFMG
   location?: string;
   sortBy?: "days_desc" | "days_asc" | "date_desc" | "date_asc";
+  page?: number;
+  limit?: number;
 }) {
   return useQuery<VehiclesListResponse>({
     queryKey: [api.dashboard.list.path, filters],
@@ -38,6 +40,8 @@ export function useVehicles(filters?: {
       
       if (filters?.location && filters.location !== "ALL") params.append("location", filters.location);
       if (filters?.sortBy) params.append("sortBy", filters.sortBy);
+      if (filters?.page) params.append("page", String(filters.page));
+      if (filters?.limit) params.append("limit", String(filters.limit));
 
       const url = `${api.dashboard.list.path}?${params.toString()}`;
       

@@ -32,6 +32,8 @@ export default function Dashboard() {
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [storeFilter, setStoreFilter] = useState<string>("ALL");
   const [sort, setSort] = useState<string>("days_desc");
+  const [page, setPage] = useState(1);
+  const limit = 50;
 
   // Debounced search could be added here, for now passing direct
   const { data: vehiclesData, isLoading: vehiclesLoading } = useVehicles({
@@ -39,7 +41,11 @@ export default function Dashboard() {
     status: statusFilter === "ALL" ? undefined : statusFilter as any,
     store: storeFilter === "ALL" ? undefined : storeFilter as any,
     sortBy: sort as any,
+    page,
+    limit,
   });
+
+  const totalPages = vehiclesData ? Math.ceil(vehiclesData.total / limit) : 1;
 
   const handleRefresh = () => {
     triggerIngest(undefined, {
@@ -247,9 +253,28 @@ export default function Dashboard() {
             </tbody>
           </table>
         </div>
-        {/* Pagination could go here */}
-        <div className="px-6 py-4 border-t border-border bg-muted/20 text-xs text-muted-foreground flex justify-between">
+        {/* Pagination */}
+        <div className="px-6 py-4 border-t border-border bg-muted/20 text-sm text-muted-foreground flex justify-between items-center">
             <span>Showing {vehiclesData?.items.length || 0} of {vehiclesData?.total || 0} vehicles</span>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                Previous
+              </Button>
+              <span className="px-2">Page {page} of {totalPages}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+              >
+                Next
+              </Button>
+            </div>
         </div>
       </div>
     </div>
