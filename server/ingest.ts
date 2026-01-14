@@ -1,17 +1,68 @@
 import fs from "fs";
 import path from "path";
-import { parse } from "csv-parse/sync";
+import { parse } from "csv-parse";
 import { storage } from "./storage";
 import { InventoryVehicle, ServiceRo, ServiceRoDetail } from "@shared/schema";
 
 const INCOMING_DIR = "data/incoming";
 const PROCESSED_DIR = "data/processed";
 const REJECTED_DIR = "data/rejected";
+const BATCH_SIZE = 200; // Process in small batches to prevent memory issues
 
 // Ensure dirs exist
 [INCOMING_DIR, PROCESSED_DIR, REJECTED_DIR].forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
+
+// Stream-based CSV processing to avoid loading entire file into memory
+async function streamProcessFile(filePath: string, fileType: string): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const parser = parse({ 
+      columns: true, 
+      skip_empty_lines: true,
+      trim: true 
+    });
+    
+    let batch: any[] = [];
+    let totalRows = 0;
+    let headerLogged = false;
+
+    const processBatch = async () => {
+      if (batch.length === 0) return;
+      const currentBatch = [...batch];
+      batch = []; // Clear batch immediately
+      await processRecords(fileType, currentBatch, !headerLogged);
+      headerLogged = true;
+    };
+
+    parser.on('readable', async function() {
+      let record;
+      while ((record = parser.read()) !== null) {
+        batch.push(record);
+        totalRows++;
+        
+        if (batch.length >= BATCH_SIZE) {
+          parser.pause();
+          await processBatch();
+          parser.resume();
+        }
+      }
+    });
+
+    parser.on('error', (err: Error) => {
+      reject(err);
+    });
+
+    parser.on('end', async () => {
+      // Process any remaining records
+      await processBatch();
+      resolve(totalRows);
+    });
+
+    // Pipe file to parser
+    fs.createReadStream(filePath).pipe(parser);
+  });
+}
 
 export async function processFiles() {
   const files = fs.readdirSync(INCOMING_DIR);
@@ -25,16 +76,9 @@ export async function processFiles() {
       const fileType = detectFileType(file);
       if (!fileType) throw new Error("Unknown file type");
 
-      const content = fs.readFileSync(filePath, "utf-8");
-      const records = parse(content, { 
-        columns: true, 
-        skip_empty_lines: true,
-        trim: true 
-      });
-
-      console.log(`Processing ${file} as ${fileType} with ${records.length} rows`);
-
-      await processRecords(fileType, records);
+      console.log(`Processing ${file} as ${fileType}...`);
+      const rowCount = await streamProcessFile(filePath, fileType);
+      console.log(`Completed ${file}: ${rowCount} rows processed`);
       
       // Move to processed
       const dest = path.join(PROCESSED_DIR, `${Date.now()}_${file}`);
@@ -43,7 +87,7 @@ export async function processFiles() {
       await storage.logIngestion({
         fileName: file,
         fileType,
-        rowCount: records.length,
+        rowCount,
         status: "SUCCESS"
       });
       processed.push(file);
@@ -81,18 +125,15 @@ function detectFileType(filename: string): string | null {
   return null;
 }
 
-async function processRecords(type: string, records: any[]) {
-  // Helper to safely parse date strings (assuming ISO or YYYY-MM-DD or standard CSV formats)
-  // For robustness, we might need a library like date-fns, but try/catch basic new Date() for now
+async function processRecords(type: string, records: any[], logHeader: boolean = true) {
   const parseDate = (d: string) => {
     if (!d) return null;
     const date = new Date(d);
-    return isNaN(date.getTime()) ? null : date.toISOString(); // Postgres driver handles ISO string
+    return isNaN(date.getTime()) ? null : date.toISOString();
   };
 
   if (type === "INVENTORY") {
-    // Debug: log first record keys to identify column names
-    if (records.length > 0) {
+    if (logHeader && records.length > 0) {
       console.log("CSV Column Keys:", Object.keys(records[0]).slice(0, 5).join(', ') + '...');
     }
     const items: InventoryVehicle[] = records.map(r => {
@@ -118,8 +159,9 @@ async function processRecords(type: string, records: any[]) {
       return hasVinAndStock && isUsed;
     });
     
-    console.log(`Filtered to ${items.length} USED vehicles`);
-    await storage.upsertInventory(items);
+    if (items.length > 0) {
+      await storage.upsertInventory(items);
+    }
   }
 
   if (type === "RO_CLOSED" || type === "RO_OPEN") {
@@ -134,7 +176,9 @@ async function processRecords(type: string, records: any[]) {
       updatedAt: new Date(),
     })).filter(i => i.roNumber && i.vin);
 
-    await storage.upsertRos(items);
+    if (items.length > 0) {
+      await storage.upsertRos(items);
+    }
   }
 
   if (type === "RO_CLOSED_DETAILS" || type === "RO_OPEN_DETAILS") {
@@ -149,6 +193,8 @@ async function processRecords(type: string, records: any[]) {
       partsCost: parseFloat(r.partscost || r.PartsCost) || 0,
     } as any)).filter(i => i.roNumber && i.opCode);
     
-    await storage.upsertRoDetails(items);
+    if (items.length > 0) {
+      await storage.upsertRoDetails(items);
+    }
   }
 }
