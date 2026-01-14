@@ -182,7 +182,9 @@ export default function Dashboard() {
               <tr>
                 <th className="px-6 py-4">Stock #</th>
                 <th className="px-6 py-4">VIN (Last 8)</th>
-                <th className="px-6 py-4">Vehicle</th>
+                <th className="px-4 py-4">Year</th>
+                <th className="px-4 py-4">Make</th>
+                <th className="px-4 py-4">Model</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right">Recon Days</th>
                 <th className="px-6 py-4 text-right">Entry Date</th>
@@ -194,14 +196,14 @@ export default function Dashboard() {
             <tbody className="divide-y divide-border">
               {vehiclesLoading ? (
                  <tr>
-                   <td colSpan={9} className="px-6 py-12 text-center text-muted-foreground">
+                   <td colSpan={11} className="px-6 py-12 text-center text-muted-foreground">
                      <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
                      Loading vehicles...
                    </td>
                  </tr>
               ) : vehiclesData?.items.length === 0 ? (
                 <tr>
-                   <td colSpan={9} className="px-6 py-12 text-center text-muted-foreground">
+                   <td colSpan={11} className="px-6 py-12 text-center text-muted-foreground">
                      No vehicles found matching your criteria.
                    </td>
                  </tr>
@@ -210,14 +212,9 @@ export default function Dashboard() {
                   <tr key={vehicle.vin} className="group hover:bg-muted/30 transition-colors">
                     <td className="px-6 py-4 font-medium text-foreground">{vehicle.stockNo}</td>
                     <td className="px-6 py-4 font-mono text-muted-foreground">{vehicle.vin.slice(-8)}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <Car className="w-4 h-4 text-muted-foreground" />
-                        <span>
-                          {vehicle.year} <span className="font-semibold">{vehicle.make}</span> {vehicle.model}
-                        </span>
-                      </div>
-                    </td>
+                    <td className="px-4 py-4 text-muted-foreground">{vehicle.year}</td>
+                    <td className="px-4 py-4 font-semibold">{vehicle.make}</td>
+                    <td className="px-4 py-4 text-muted-foreground">{vehicle.model}</td>
                     <td className="px-6 py-4">
                       <StatusBadge status={vehicle.reconStatus} />
                     </td>
