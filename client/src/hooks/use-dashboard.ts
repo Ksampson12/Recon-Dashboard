@@ -19,20 +19,18 @@ export function useDashboardStats() {
 
 export function useVehicles(filters?: {
   search?: string;
-  status?: "NO_RECON_FOUND" | "IN_PROGRESS" | "COMPLETE";
+  status?: "IN_PROGRESS" | "COMPLETE";
   location?: string;
   sortBy?: "days_desc" | "days_asc" | "date_desc" | "date_asc";
 }) {
   return useQuery<VehiclesListResponse>({
     queryKey: [api.dashboard.list.path, filters],
     queryFn: async () => {
-      // Build query string manually or use URLSearchParams
       const params = new URLSearchParams();
       if (filters?.search) params.append("search", filters.search);
       
-      // Filter for only IN_PROGRESS or NO_RECON_FOUND to show "only vehicles in recon"
-      const statusFilter = filters?.status || "IN_PROGRESS";
-      params.append("status", statusFilter);
+      // Only add status filter if specified (otherwise show all)
+      if (filters?.status) params.append("status", filters.status);
       
       if (filters?.location && filters.location !== "ALL") params.append("location", filters.location);
       if (filters?.sortBy) params.append("sortBy", filters.sortBy);

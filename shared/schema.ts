@@ -1,9 +1,9 @@
-import { pgTable, text, serial, integer, boolean, timestamp, date, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, date, pgEnum, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // === ENUMS ===
-export const reconStatusEnum = pgEnum("recon_status", ["NO_RECON_FOUND", "IN_PROGRESS", "COMPLETE"]);
+export const reconStatusEnum = pgEnum("recon_status", ["IN_PROGRESS", "COMPLETE"]);
 
 // === CORE TABLES ===
 
@@ -11,6 +11,7 @@ export const reconStatusEnum = pgEnum("recon_status", ["NO_RECON_FOUND", "IN_PRO
 export const inventoryVehicles = pgTable("inventory_vehicles", {
   vin: text("vin").primaryKey(),
   stockNo: text("stock_no").notNull(),
+  stockType: text("stock_type"), // USED, NEW, DEMO - we filter to USED only
   entryDate: date("entry_date").notNull(), // Inventory Entry Date
   year: integer("year"),
   make: text("make"),
@@ -38,6 +39,11 @@ export const serviceRoDetails = pgTable("service_ro_details", {
   roNumber: text("ro_number").notNull(),
   opCode: text("op_code").notNull(),
   opDescription: text("op_description"),
+  laborType: text("labor_type"), // ISP, CPM, etc.
+  laborSale: numeric("labor_sale"), // Labor sale amount
+  laborCost: numeric("labor_cost"), // Labor cost amount
+  partsSale: numeric("parts_sale"), // Parts sale amount
+  partsCost: numeric("parts_cost"), // Parts cost amount
 });
 
 // === DERIVED/FACT TABLES ===
@@ -61,7 +67,12 @@ export const factReconVehicles = pgTable("fact_recon_vehicles", {
   lastReconRoNumber: text("last_recon_ro_number"), // The RO triggering "Complete"
   lastReconCloseDate: date("last_recon_close_date"),
   reconDays: integer("recon_days"), // last_recon_close_date - entry_date
-  reconStatus: reconStatusEnum("recon_status").default("NO_RECON_FOUND"),
+  reconStatus: reconStatusEnum("recon_status").default("IN_PROGRESS"),
+  
+  // Cost tracking
+  totalLaborCost: numeric("total_labor_cost"), // Sum of all labor costs
+  totalPartsCost: numeric("total_parts_cost"), // Sum of all parts costs
+  totalReconCost: numeric("total_recon_cost"), // Labor + Parts
 
   computedAt: timestamp("computed_at").defaultNow(),
 });
@@ -91,14 +102,14 @@ export type ServiceRoDetail = typeof serviceRoDetails.$inferSelect;
 export type FactReconVehicle = typeof factReconVehicles.$inferSelect;
 export type IngestionLog = typeof ingestionLogs.$inferSelect;
 
-export type ReconStatus = "NO_RECON_FOUND" | "IN_PROGRESS" | "COMPLETE";
+export type ReconStatus = "IN_PROGRESS" | "COMPLETE";
 
 // API Response Types
 export interface DashboardStats {
   avgReconDays: number;
   medianReconDays: number;
   countInProgress: number;
-  countNoRecon: number;
   countCompleted: number;
   countOverThreshold: number; // e.g. over 10 days
+  totalReconCost: number; // Sum of all recon costs
 }

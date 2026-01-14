@@ -30,9 +30,9 @@ export const api = {
           avgReconDays: z.number(),
           medianReconDays: z.number(),
           countInProgress: z.number(),
-          countNoRecon: z.number(),
           countCompleted: z.number(),
           countOverThreshold: z.number(),
+          totalReconCost: z.number(),
         }),
       },
     },
@@ -42,7 +42,7 @@ export const api = {
       input: z.object({
         search: z.string().optional(), // stock or vin
         location: z.string().optional(),
-        status: z.enum(["NO_RECON_FOUND", "IN_PROGRESS", "COMPLETE"]).optional(),
+        status: z.enum(["IN_PROGRESS", "COMPLETE"]).optional(),
         sortBy: z.enum(["days_desc", "days_asc", "date_desc", "date_asc"]).optional(),
         page: z.coerce.number().optional(),
         limit: z.coerce.number().optional(),

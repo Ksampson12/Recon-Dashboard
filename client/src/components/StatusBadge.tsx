@@ -12,17 +12,15 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
   const variants: Record<string, string> = {
     COMPLETE: "bg-[hsl(var(--status-complete-bg))] text-[hsl(var(--status-complete))]",
     IN_PROGRESS: "bg-[hsl(var(--status-progress-bg))] text-[hsl(var(--status-progress))]",
-    NO_RECON_FOUND: "bg-[hsl(var(--status-none-bg))] text-[hsl(var(--status-none))]",
   };
 
   const labels: Record<string, string> = {
     COMPLETE: "Complete",
     IN_PROGRESS: "In Progress",
-    NO_RECON_FOUND: "No Recon",
   };
 
-  const style = variants[normalizedStatus] || variants["NO_RECON_FOUND"];
-  const label = labels[normalizedStatus] || "Unknown";
+  const style = variants[normalizedStatus] || variants["IN_PROGRESS"];
+  const label = labels[normalizedStatus] || "In Progress";
 
   return (
     <span

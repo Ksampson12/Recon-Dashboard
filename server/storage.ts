@@ -47,14 +47,14 @@ export class DatabaseStorage implements IStorage {
     const stats = await db.select({
       avg: sql<number>`avg(${factReconVehicles.reconDays})`,
       countInProgress: count(sql`CASE WHEN ${factReconVehicles.reconStatus} = 'IN_PROGRESS' THEN 1 END`),
-      countNoRecon: count(sql`CASE WHEN ${factReconVehicles.reconStatus} = 'NO_RECON_FOUND' THEN 1 END`),
       countCompleted: count(sql`CASE WHEN ${factReconVehicles.reconStatus} = 'COMPLETE' THEN 1 END`),
       countOverThreshold: count(sql`CASE WHEN ${factReconVehicles.reconDays} > 10 THEN 1 END`),
+      totalReconCost: sql<number>`COALESCE(SUM(${factReconVehicles.totalReconCost}::numeric), 0)`,
     }).from(factReconVehicles);
 
     const row = stats[0];
     
-    // Explicitly check for total vehicles to debug
+    // Debug logging
     const totalVehicles = await db.select({ count: count() }).from(factReconVehicles);
     console.log(`Dashboard Stats Debug: Total Vehicles in Fact Table: ${totalVehicles[0].count}`);
     console.log(`Dashboard Stats Debug: Stats Row: ${JSON.stringify(row)}`);
@@ -63,9 +63,9 @@ export class DatabaseStorage implements IStorage {
       avgReconDays: Math.round(Number(row.avg) || 0),
       medianReconDays: 0,
       countInProgress: Number(row.countInProgress) || 0,
-      countNoRecon: Number(row.countNoRecon) || 0,
       countCompleted: Number(row.countCompleted) || 0,
       countOverThreshold: Number(row.countOverThreshold) || 0,
+      totalReconCost: Number(row.totalReconCost) || 0,
     };
   }
 
@@ -81,10 +81,8 @@ export class DatabaseStorage implements IStorage {
     }
     if (filters.status && filters.status !== "All") {
       conditions.push(eq(factReconVehicles.reconStatus, filters.status as any));
-    } else {
-      // Default: show only "in recon" vehicles (exclude COMPLETE)
-      conditions.push(sql`${factReconVehicles.reconStatus} != 'COMPLETE'`);
     }
+    // No default filter - show all vehicles (IN_PROGRESS and COMPLETE)
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
     
@@ -147,6 +145,7 @@ export class DatabaseStorage implements IStorage {
         target: inventoryVehicles.vin,
         set: {
           stockNo: sql`excluded.stock_no`,
+          stockType: sql`excluded.stock_type`,
           entryDate: sql`excluded.entry_date`,
           lotLocation: sql`excluded.lot_location`,
           mileage: sql`excluded.mileage`,
@@ -189,43 +188,54 @@ export class DatabaseStorage implements IStorage {
   }
 
   async recomputeReconMetrics(): Promise<void> {
-    // This is the core logic:
-    // 1. Clear fact table (or truncate) - for full recompute
-    // 2. Insert calculated data from inventory + ROs
+    // Core logic:
+    // 1. Clear fact table
+    // 2. Only include USED vehicles that have at least one RO with UCI op code
+    // 3. Calculate costs from RO details
     
-    await db.execute(sql`TRUNCATE TABLE ${factReconVehicles}`);
+    await db.execute(sql`TRUNCATE TABLE fact_recon_vehicles`);
 
-    // Clear existing data (this will also delete from fact_recon_vehicles due to constraints if any,
-    // but we'll truncate it explicitly)
-    await db.execute(sql`TRUNCATE TABLE ${factReconVehicles}`);
-
-    // This complex query does the "Last RO with OP UCI" logic with normalization
+    // Insert vehicles that have UCI work (either open or closed)
+    // Only USED vehicles, not sold, that have ROs with UCI op code
     await db.execute(sql`
       INSERT INTO fact_recon_vehicles (
         vin, stock_no, entry_date, lot_location, year, make, model, mileage, sold_date,
-        last_recon_ro_number, last_recon_close_date, recon_days, recon_status
+        last_recon_ro_number, last_recon_close_date, recon_days, recon_status,
+        total_labor_cost, total_parts_cost, total_recon_cost
       )
       SELECT 
         i.vin, i.stock_no, i.entry_date, i.lot_location, i.year, i.make, i.model, i.mileage, i.sold_date,
         
-        -- Logic for last Recon RO (Locked to UCI only)
+        -- Logic for last Recon RO with UCI (closed)
         recon.ro_number as last_recon_ro_number,
         recon.close_date as last_recon_close_date,
         
-        -- Recon Days (DATEDIFF equivalent in PG)
+        -- Recon Days: from entry to UCI close, or days since entry if still in progress
         CASE 
           WHEN recon.close_date IS NOT NULL THEN (recon.close_date::date - i.entry_date::date)
-          ELSE NULL 
+          ELSE (CURRENT_DATE - i.entry_date::date)
         END as recon_days,
 
-        -- Status
+        -- Status: only IN_PROGRESS or COMPLETE (no more NO_RECON_FOUND)
         CASE 
           WHEN recon.ro_number IS NOT NULL THEN 'COMPLETE'::recon_status
-          WHEN open_recon.ro_number IS NOT NULL THEN 'IN_PROGRESS'::recon_status
-          ELSE 'NO_RECON_FOUND'::recon_status
-        END as recon_status
+          ELSE 'IN_PROGRESS'::recon_status
+        END as recon_status,
+        
+        -- Cost tracking: sum all labor and parts costs from ROs for this vehicle
+        COALESCE(costs.total_labor, 0) as total_labor_cost,
+        COALESCE(costs.total_parts, 0) as total_parts_cost,
+        COALESCE(costs.total_labor, 0) + COALESCE(costs.total_parts, 0) as total_recon_cost
 
       FROM inventory_vehicles i
+      
+      -- Only include vehicles that have at least one RO with UCI op code
+      INNER JOIN (
+        SELECT DISTINCT UPPER(TRIM(ro.vin)) as vin
+        FROM service_ros ro
+        JOIN service_ro_details d ON ro.ro_number = d.ro_number
+        WHERE UPPER(d.op_code) = 'UCI'
+      ) has_uci ON UPPER(TRIM(i.vin)) = has_uci.vin
       
       -- Join to find the LATEST closed recon RO (Op Code UCI only)
       LEFT JOIN LATERAL (
@@ -233,26 +243,30 @@ export class DatabaseStorage implements IStorage {
         FROM service_ros ro
         JOIN service_ro_details d ON ro.ro_number = d.ro_number
         WHERE UPPER(TRIM(ro.vin)) = UPPER(TRIM(i.vin))
-          AND d.op_code = 'UCI'
+          AND UPPER(d.op_code) = 'UCI'
           AND ro.close_date IS NOT NULL
         ORDER BY ro.close_date DESC
         LIMIT 1
       ) recon ON true
-
-      -- Join to find if any OPEN recon RO exists (if no closed one found)
+      
+      -- Calculate total costs from all RO details for this vehicle
       LEFT JOIN LATERAL (
-        SELECT ro.ro_number
+        SELECT 
+          SUM(COALESCE(d.labor_cost::numeric, 0)) as total_labor,
+          SUM(COALESCE(d.parts_cost::numeric, 0)) as total_parts
         FROM service_ros ro
         JOIN service_ro_details d ON ro.ro_number = d.ro_number
         WHERE UPPER(TRIM(ro.vin)) = UPPER(TRIM(i.vin))
-          AND d.op_code = 'UCI'
-          AND ro.close_date IS NULL
-        LIMIT 1
-      ) open_recon ON true
+      ) costs ON true
       
-      -- Only include units where SoldDate IS NULL
-      WHERE i.sold_date IS NULL
+      -- Only include USED vehicles that are not sold
+      WHERE i.stock_type = 'USED' 
+        AND i.sold_date IS NULL
     `);
+    
+    // Log results
+    const result = await db.select({ count: count() }).from(factReconVehicles);
+    console.log(`Recomputed metrics: ${result[0].count} vehicles in recon`);
   }
 }
 

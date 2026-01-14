@@ -91,19 +91,32 @@ async function processRecords(type: string, records: any[]) {
   };
 
   if (type === "INVENTORY") {
-    const items: InventoryVehicle[] = records.map(r => ({
-      vin: r.vin || r.VIN,
-      stockNo: r.stockno || r.stocknumber || r.StockNo,
-      entryDate: parseDate(r.entrydate || r.EntryDate || r.DateIn) || new Date().toISOString(),
-      year: parseInt(r.year || r.Year) || 0,
-      make: r.make || r.makenameupper || r.Make,
-      model: r.model || r.Model,
-      mileage: parseInt(r.mileage || r.Mileage || r.Miles) || 0,
-      lotLocation: r.lotlocation || r.LotLocation || r.Location,
-      soldDate: parseDate(r.solddate || r.vehiclesolddate || r.SoldDate),
-      updatedAt: new Date(),
-    })).filter(i => i.vin && i.stockNo); // Removed entryDate from filter to avoid dropping rows, using fallback instead
+    const items: InventoryVehicle[] = records.map(r => {
+      const stockType = (r.stocktype || r.StockType || "").toUpperCase();
+      return {
+        vin: r.vin || r.VIN,
+        stockNo: r.stockno || r.stocknumber || r.StockNo,
+        stockType: stockType,
+        entryDate: parseDate(r.entrydate || r.EntryDate || r.DateIn) || new Date().toISOString(),
+        year: parseInt(r.year || r.Year) || 0,
+        make: r.make || r.makenameupper || r.Make,
+        model: r.model || r.Model,
+        mileage: parseInt(r.mileage || r.Mileage || r.Miles) || 0,
+        lotLocation: r.lotlocation || r.LotLocation || r.Location,
+        soldDate: parseDate(r.solddate || r.vehiclesolddate || r.SoldDate),
+        updatedAt: new Date(),
+      };
+    }).filter(i => {
+      // Only include USED vehicles that are not sold
+      const isUsed = i.stockType === "USED";
+      const hasVinAndStock = i.vin && i.stockNo;
+      if (!isUsed && i.stockType) {
+        console.log(`Skipping non-USED vehicle: ${i.vin} (stockType: ${i.stockType})`);
+      }
+      return hasVinAndStock && isUsed;
+    });
     
+    console.log(`Filtered to ${items.length} USED vehicles`);
     await storage.upsertInventory(items);
   }
 
@@ -127,6 +140,11 @@ async function processRecords(type: string, records: any[]) {
       roNumber: r.ronumber || r.RONumber || r.RepairOrder,
       opCode: String(r.opcode || r.OpCode || r.OperationCode || ""),
       opDescription: r.opcodedescription || r.opcodedesc || r.Description,
+      laborType: r.labortype || r.LaborType || null,
+      laborSale: parseFloat(r.laborsale || r.LaborSale) || 0,
+      laborCost: parseFloat(r.laborcost || r.LaborCost) || 0,
+      partsSale: parseFloat(r.partssale || r.PartsSale) || 0,
+      partsCost: parseFloat(r.partscost || r.PartsCost) || 0,
     } as any)).filter(i => i.roNumber && i.opCode);
     
     await storage.upsertRoDetails(items);

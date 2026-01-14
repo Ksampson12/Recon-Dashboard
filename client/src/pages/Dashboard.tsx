@@ -17,7 +17,8 @@ import {
   CheckCircle2, 
   AlertCircle,
   TrendingUp,
-  Filter
+  Filter,
+  DollarSign
 } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
@@ -89,7 +90,7 @@ export default function Dashboard() {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <KPICard 
           title="Avg Recon Days" 
           value={stats?.avgReconDays.toFixed(1) || "0.0"} 
@@ -118,6 +119,13 @@ export default function Dashboard() {
           description="> 10 days in recon"
           className="border-l-4 border-l-red-500"
         />
+        <KPICard 
+          title="Total Recon Cost" 
+          value={`$${(stats?.totalReconCost || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`} 
+          icon={DollarSign}
+          description="Labor + Parts costs"
+          className="border-l-4 border-l-purple-500"
+        />
       </div>
 
       {/* Filters & Controls */}
@@ -140,7 +148,6 @@ export default function Dashboard() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="ALL">All Statuses</SelectItem>
-                <SelectItem value="NO_RECON_FOUND">No Recon</SelectItem>
                 <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
                 <SelectItem value="COMPLETE">Complete</SelectItem>
               </SelectContent>
