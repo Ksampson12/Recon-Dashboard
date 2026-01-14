@@ -91,6 +91,11 @@ async function processRecords(type: string, records: any[]) {
   };
 
   if (type === "INVENTORY") {
+    // Debug: log first record keys to identify column names
+    if (records.length > 0) {
+      console.log("CSV Column Keys:", Object.keys(records[0]));
+      console.log("Sample inventorycompany value:", records[0].inventorycompany, records[0].InventoryCompany);
+    }
     const items: InventoryVehicle[] = records.map(r => {
       const stockType = (r.stocktype || r.StockType || "").toUpperCase();
       return {
