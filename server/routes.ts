@@ -26,6 +26,7 @@ export async function registerRoutes(
       search: req.query.search as string,
       location: req.query.location as string,
       status: req.query.status as string,
+      store: req.query.store as string, // 1=ACF, 2=LCF, 3=CFMG
       sortBy: req.query.sortBy as string,
       page: req.query.page ? Number(req.query.page) : 1,
       limit: req.query.limit ? Number(req.query.limit) : 50,
