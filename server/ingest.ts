@@ -97,6 +97,7 @@ async function processRecords(type: string, records: any[]) {
         vin: r.vin || r.VIN,
         stockNo: r.stockno || r.stocknumber || r.StockNo,
         stockType: stockType,
+        inventoryCompany: r.inventorycompany || r.InventoryCompany || null, // 1=ACF, 2=LCF, 3=CFMG
         entryDate: parseDate(r.entrydate || r.EntryDate || r.DateIn) || new Date().toISOString(),
         year: parseInt(r.year || r.Year) || 0,
         make: r.make || r.makenameupper || r.Make,

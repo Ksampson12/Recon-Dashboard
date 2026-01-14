@@ -43,6 +43,7 @@ export const api = {
         search: z.string().optional(), // stock or vin
         location: z.string().optional(),
         status: z.enum(["IN_PROGRESS", "COMPLETE"]).optional(),
+        store: z.enum(["1", "2", "3"]).optional(), // 1=ACF, 2=LCF, 3=CFMG
         sortBy: z.enum(["days_desc", "days_asc", "date_desc", "date_asc"]).optional(),
         page: z.coerce.number().optional(),
         limit: z.coerce.number().optional(),

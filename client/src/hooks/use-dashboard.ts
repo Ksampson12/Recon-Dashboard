@@ -20,6 +20,7 @@ export function useDashboardStats() {
 export function useVehicles(filters?: {
   search?: string;
   status?: "IN_PROGRESS" | "COMPLETE";
+  store?: "1" | "2" | "3"; // 1=ACF, 2=LCF, 3=CFMG
   location?: string;
   sortBy?: "days_desc" | "days_asc" | "date_desc" | "date_asc";
 }) {
@@ -31,6 +32,9 @@ export function useVehicles(filters?: {
       
       // Only add status filter if specified (otherwise show all)
       if (filters?.status) params.append("status", filters.status);
+      
+      // Store filter (1=ACF, 2=LCF, 3=CFMG)
+      if (filters?.store) params.append("store", filters.store);
       
       if (filters?.location && filters.location !== "ALL") params.append("location", filters.location);
       if (filters?.sortBy) params.append("sortBy", filters.sortBy);

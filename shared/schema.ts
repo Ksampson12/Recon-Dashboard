@@ -12,6 +12,7 @@ export const inventoryVehicles = pgTable("inventory_vehicles", {
   vin: text("vin").primaryKey(),
   stockNo: text("stock_no").notNull(),
   stockType: text("stock_type"), // USED, NEW, DEMO - we filter to USED only
+  inventoryCompany: text("inventory_company"), // 1=ACF, 2=LCF, 3=CFMG
   entryDate: date("entry_date").notNull(), // Inventory Entry Date
   year: integer("year"),
   make: text("make"),
@@ -55,6 +56,7 @@ export const factReconVehicles = pgTable("fact_recon_vehicles", {
   
   // Denormalized fields for fast dashboard rendering
   stockNo: text("stock_no"),
+  inventoryCompany: text("inventory_company"), // 1=ACF, 2=LCF, 3=CFMG
   entryDate: date("entry_date"),
   lotLocation: text("lot_location"),
   year: integer("year"),

@@ -21,6 +21,7 @@ export interface IStorage {
     search?: string;
     location?: string;
     status?: string;
+    store?: string; // 1=ACF, 2=LCF, 3=CFMG
     sortBy?: string;
     page?: number;
     limit?: number;
@@ -69,7 +70,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getReconVehicles(filters: { search?: string; location?: string; status?: string; sortBy?: string; page?: number; limit?: number } = {}) {
+  async getReconVehicles(filters: { search?: string; location?: string; status?: string; store?: string; sortBy?: string; page?: number; limit?: number } = {}) {
     const conditions = [];
     if (filters.search) {
       conditions.push(
@@ -81,6 +82,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (filters.status && filters.status !== "All") {
       conditions.push(eq(factReconVehicles.reconStatus, filters.status as any));
+    }
+    if (filters.store && filters.store !== "All") {
+      conditions.push(eq(factReconVehicles.inventoryCompany, filters.store));
     }
     // No default filter - show all vehicles (IN_PROGRESS and COMPLETE)
 
@@ -146,6 +150,7 @@ export class DatabaseStorage implements IStorage {
         set: {
           stockNo: sql`excluded.stock_no`,
           stockType: sql`excluded.stock_type`,
+          inventoryCompany: sql`excluded.inventory_company`,
           entryDate: sql`excluded.entry_date`,
           lotLocation: sql`excluded.lot_location`,
           mileage: sql`excluded.mileage`,
@@ -199,12 +204,12 @@ export class DatabaseStorage implements IStorage {
     // Only USED vehicles, not sold, that have ROs with UCI op code
     await db.execute(sql`
       INSERT INTO fact_recon_vehicles (
-        vin, stock_no, entry_date, lot_location, year, make, model, mileage, sold_date,
+        vin, stock_no, inventory_company, entry_date, lot_location, year, make, model, mileage, sold_date,
         last_recon_ro_number, last_recon_close_date, recon_days, recon_status,
         total_labor_cost, total_parts_cost, total_recon_cost
       )
       SELECT 
-        i.vin, i.stock_no, i.entry_date, i.lot_location, i.year, i.make, i.model, i.mileage, i.sold_date,
+        i.vin, i.stock_no, i.inventory_company, i.entry_date, i.lot_location, i.year, i.make, i.model, i.mileage, i.sold_date,
         
         -- Logic for last Recon RO with UCI (closed)
         recon.ro_number as last_recon_ro_number,

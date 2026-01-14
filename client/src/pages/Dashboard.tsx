@@ -30,12 +30,14 @@ export default function Dashboard() {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [storeFilter, setStoreFilter] = useState<string>("ALL");
   const [sort, setSort] = useState<string>("days_desc");
 
   // Debounced search could be added here, for now passing direct
   const { data: vehiclesData, isLoading: vehiclesLoading } = useVehicles({
     search: search || undefined,
     status: statusFilter === "ALL" ? undefined : statusFilter as any,
+    store: storeFilter === "ALL" ? undefined : storeFilter as any,
     sortBy: sort as any,
   });
 
@@ -142,8 +144,19 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-2">
             <Filter className="w-4 h-4 text-muted-foreground" />
+            <Select value={storeFilter} onValueChange={setStoreFilter}>
+              <SelectTrigger className="w-[140px] bg-background">
+                <SelectValue placeholder="Store" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Stores</SelectItem>
+                <SelectItem value="1">ACF</SelectItem>
+                <SelectItem value="2">LCF</SelectItem>
+                <SelectItem value="3">CFMG</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px] bg-background">
+              <SelectTrigger className="w-[150px] bg-background">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
