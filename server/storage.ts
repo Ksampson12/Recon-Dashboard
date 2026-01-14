@@ -194,22 +194,23 @@ export class DatabaseStorage implements IStorage {
 
   async upsertRoDetails(items: ServiceRoDetail[]): Promise<void> {
     if (items.length === 0) return;
-    // Delete old lines for these ROs then insert in batches
-    const roNumbers = Array.from(new Set(items.map(i => i.roNumber)));
-    if (roNumbers.length > 0) {
-      // Delete in batches of 500 RO numbers
-      const BATCH_SIZE = 500;
-      for (let i = 0; i < roNumbers.length; i += BATCH_SIZE) {
-        const batch = roNumbers.slice(i, i + BATCH_SIZE);
-        await db.delete(serviceRoDetails).where(sql`${serviceRoDetails.roNumber} IN ${batch}`);
-      }
-      // Insert in batches of 500
-      for (let i = 0; i < items.length; i += BATCH_SIZE) {
-        const batch = items.slice(i, i + BATCH_SIZE);
-        await db.insert(serviceRoDetails).values(batch);
-      }
+    // Just insert - no delete to avoid deadlocks. Caller handles cleanup if needed.
+    const BATCH_SIZE = 500;
+    for (let i = 0; i < items.length; i += BATCH_SIZE) {
+      const batch = items.slice(i, i + BATCH_SIZE);
+      await db.insert(serviceRoDetails).values(batch);
     }
-    console.log(`Upserted ${items.length} RO details in batches`);
+    console.log(`Inserted ${items.length} RO details in batches`);
+  }
+
+  async deleteRoDetailsForRoNumbers(roNumbers: string[]): Promise<void> {
+    if (roNumbers.length === 0) return;
+    const BATCH_SIZE = 500;
+    for (let i = 0; i < roNumbers.length; i += BATCH_SIZE) {
+      const batch = roNumbers.slice(i, i + BATCH_SIZE);
+      await db.delete(serviceRoDetails).where(sql`${serviceRoDetails.roNumber} IN ${batch}`);
+    }
+    console.log(`Deleted RO details for ${roNumbers.length} RO numbers`);
   }
 
   async recomputeReconMetrics(): Promise<void> {

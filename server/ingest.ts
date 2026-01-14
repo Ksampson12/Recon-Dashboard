@@ -1,67 +1,66 @@
 import fs from "fs";
 import path from "path";
 import { parse } from "csv-parse";
+import { finished } from "stream/promises";
 import { storage } from "./storage";
 import { InventoryVehicle, ServiceRo, ServiceRoDetail } from "@shared/schema";
 
 const INCOMING_DIR = "data/incoming";
 const PROCESSED_DIR = "data/processed";
 const REJECTED_DIR = "data/rejected";
-const BATCH_SIZE = 200; // Process in small batches to prevent memory issues
+const BATCH_SIZE = 500; // Process in batches
 
 // Ensure dirs exist
 [INCOMING_DIR, PROCESSED_DIR, REJECTED_DIR].forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
 
-// Stream-based CSV processing to avoid loading entire file into memory
+// Stream CSV and collect all records, then process sequentially
 async function streamProcessFile(filePath: string, fileType: string): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const parser = parse({ 
+  const records: any[] = [];
+  
+  const parser = fs.createReadStream(filePath).pipe(
+    parse({ 
       columns: true, 
       skip_empty_lines: true,
       trim: true 
-    });
-    
-    let batch: any[] = [];
-    let totalRows = 0;
-    let headerLogged = false;
+    })
+  );
 
-    const processBatch = async () => {
-      if (batch.length === 0) return;
-      const currentBatch = [...batch];
-      batch = []; // Clear batch immediately
-      await processRecords(fileType, currentBatch, !headerLogged);
-      headerLogged = true;
-    };
+  // Collect all records from stream
+  for await (const record of parser) {
+    records.push(record);
+  }
 
-    parser.on('readable', async function() {
-      let record;
-      while ((record = parser.read()) !== null) {
-        batch.push(record);
-        totalRows++;
-        
-        if (batch.length >= BATCH_SIZE) {
-          parser.pause();
-          await processBatch();
-          parser.resume();
-        }
-      }
-    });
+  console.log(`Read ${records.length} rows from file`);
+  
+  // Process in sequential batches to avoid deadlocks
+  await processRecordsInBatches(fileType, records);
+  
+  return records.length;
+}
 
-    parser.on('error', (err: Error) => {
-      reject(err);
-    });
+// Process records in sequential batches
+async function processRecordsInBatches(type: string, records: any[]) {
+  if (records.length === 0) return;
+  
+  if (records.length > 0) {
+    console.log("CSV Column Keys:", Object.keys(records[0]).slice(0, 5).join(', ') + '...');
+  }
 
-    parser.on('end', async () => {
-      // Process any remaining records
-      await processBatch();
-      resolve(totalRows);
-    });
+  // For RO details, delete all first then insert to avoid deadlocks
+  if (type === "RO_CLOSED_DETAILS" || type === "RO_OPEN_DETAILS") {
+    const roNumbers = Array.from(new Set(
+      records.map(r => r.ronumber || r.RONumber || r.RepairOrder).filter(Boolean)
+    ));
+    console.log(`Deleting existing details for ${roNumbers.length} RO numbers...`);
+    await storage.deleteRoDetailsForRoNumbers(roNumbers);
+  }
 
-    // Pipe file to parser
-    fs.createReadStream(filePath).pipe(parser);
-  });
+  for (let i = 0; i < records.length; i += BATCH_SIZE) {
+    const batch = records.slice(i, i + BATCH_SIZE);
+    await processRecords(type, batch);
+  }
 }
 
 export async function processFiles() {
@@ -125,7 +124,7 @@ function detectFileType(filename: string): string | null {
   return null;
 }
 
-async function processRecords(type: string, records: any[], logHeader: boolean = true) {
+async function processRecords(type: string, records: any[]) {
   const parseDate = (d: string) => {
     if (!d) return null;
     const date = new Date(d);
@@ -133,9 +132,6 @@ async function processRecords(type: string, records: any[], logHeader: boolean =
   };
 
   if (type === "INVENTORY") {
-    if (logHeader && records.length > 0) {
-      console.log("CSV Column Keys:", Object.keys(records[0]).slice(0, 5).join(', ') + '...');
-    }
     const items: InventoryVehicle[] = records.map(r => {
       const stockType = (r.stocktype || r.StockType || "").toUpperCase();
       return {

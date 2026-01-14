@@ -4,3 +4,9 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Data files - don't commit large CSV uploads
+*.csv
+data/incoming/
+data/processed/
+data/rejected/
