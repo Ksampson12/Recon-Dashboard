@@ -213,6 +213,11 @@ export class DatabaseStorage implements IStorage {
     console.log(`Deleted RO details for ${roNumbers.length} RO numbers`);
   }
 
+  async truncateRoDetails(): Promise<void> {
+    await db.execute(sql`TRUNCATE TABLE service_ro_details`);
+    console.log("Truncated service_ro_details table");
+  }
+
   async recomputeReconMetrics(): Promise<void> {
     // Core logic:
     // 1. Clear fact table

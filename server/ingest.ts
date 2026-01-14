@@ -1,24 +1,27 @@
 import fs from "fs";
 import path from "path";
 import { parse } from "csv-parse";
-import { finished } from "stream/promises";
 import { storage } from "./storage";
 import { InventoryVehicle, ServiceRo, ServiceRoDetail } from "@shared/schema";
 
 const INCOMING_DIR = "data/incoming";
 const PROCESSED_DIR = "data/processed";
 const REJECTED_DIR = "data/rejected";
-const BATCH_SIZE = 500; // Process in batches
+const BATCH_SIZE = 1000; // Process in batches
 
 // Ensure dirs exist
 [INCOMING_DIR, PROCESSED_DIR, REJECTED_DIR].forEach(dir => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 });
 
-// Stream CSV and collect all records, then process sequentially
+// True streaming - process batches as we read, never hold entire file in memory
 async function streamProcessFile(filePath: string, fileType: string): Promise<number> {
-  const records: any[] = [];
-  
+  // For RO details, truncate table first since we're doing full refresh
+  if (fileType === "RO_CLOSED_DETAILS") {
+    console.log("Truncating closed RO details for full refresh...");
+    await storage.truncateRoDetails();
+  }
+
   const parser = fs.createReadStream(filePath).pipe(
     parse({ 
       columns: true, 
@@ -27,40 +30,35 @@ async function streamProcessFile(filePath: string, fileType: string): Promise<nu
     })
   );
 
-  // Collect all records from stream
+  let batch: any[] = [];
+  let totalRows = 0;
+  let headerLogged = false;
+
   for await (const record of parser) {
-    records.push(record);
+    if (!headerLogged) {
+      console.log("CSV Column Keys:", Object.keys(record).slice(0, 5).join(', ') + '...');
+      headerLogged = true;
+    }
+    
+    batch.push(record);
+    totalRows++;
+
+    // Process batch when full
+    if (batch.length >= BATCH_SIZE) {
+      await processRecords(fileType, batch);
+      if (totalRows % 10000 === 0) {
+        console.log(`Processed ${totalRows} rows...`);
+      }
+      batch = []; // Clear batch
+    }
   }
 
-  console.log(`Read ${records.length} rows from file`);
-  
-  // Process in sequential batches to avoid deadlocks
-  await processRecordsInBatches(fileType, records);
-  
-  return records.length;
-}
-
-// Process records in sequential batches
-async function processRecordsInBatches(type: string, records: any[]) {
-  if (records.length === 0) return;
-  
-  if (records.length > 0) {
-    console.log("CSV Column Keys:", Object.keys(records[0]).slice(0, 5).join(', ') + '...');
+  // Process remaining records
+  if (batch.length > 0) {
+    await processRecords(fileType, batch);
   }
 
-  // For RO details, delete all first then insert to avoid deadlocks
-  if (type === "RO_CLOSED_DETAILS" || type === "RO_OPEN_DETAILS") {
-    const roNumbers = Array.from(new Set(
-      records.map(r => r.ronumber || r.RONumber || r.RepairOrder).filter(Boolean)
-    ));
-    console.log(`Deleting existing details for ${roNumbers.length} RO numbers...`);
-    await storage.deleteRoDetailsForRoNumbers(roNumbers);
-  }
-
-  for (let i = 0; i < records.length; i += BATCH_SIZE) {
-    const batch = records.slice(i, i + BATCH_SIZE);
-    await processRecords(type, batch);
-  }
+  return totalRows;
 }
 
 export async function processFiles() {
