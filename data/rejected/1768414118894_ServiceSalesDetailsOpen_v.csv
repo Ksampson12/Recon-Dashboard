@@ -1,0 +1,81 @@
+# TABLE: ServiceSalesDetailsOpen_v
+# DESCRIPTION: Service Sales Details Open - Line items for open service sales.
+# FIELD COUNT: 76
+#
+Field Name,Description
+ActualHours,Actual hours assigned to this labor operation
+AddOnFlag,Service line add-on flag
+AuthorizationCode,Parts failure code - authorization code
+BaseID,Base record ID
+BookedDate,Booked date.
+BookedTime,Booked time.
+BookerNo,The booker number for the LineCode.
+CC_PromptOn_CP,Concern Code Prompt flag Customer Pay
+CC_PromptOn_IP,Concern Code Prompt flag Internal Pay
+CC_PromptOn_WP,Concern Code Prompt flag Warranty Pay
+CampaignCode,Campaign code for the labor line.
+Causes,Cause entered in Warranty window.
+ClaimType,Parts failure code - claim type
+ComeBack,Come back Y/N
+ComebackRO,The original repair order number
+ComebackSA,The original service advisor
+ComebackTech,The original technician
+ComplaintCode,Complaint code number
+ConcernCode,Concern Code
+ConcernCodeLabel,Concern Code Label
+ConcernCodeLabelAbbr,Concern Code Label Abbreviation
+ConcernDescription,Concern Code Description
+ConditionCode,Parts failure code - other / condition code
+DispatchActualDuration,Amount of time the technician worked on the job in tenths of an hour.
+"DispatchCode","Dispatch Code entered in A/RO/SWR, added in UDP."
+DispatchEstimatedDuration,Total estimated duration in tenths of an hour.
+DispatchLineCode,Line codes.
+DispatchLineStatus,Line status codes.
+FailedPart,Parts failure code - failed part code
+FailedPartCount,Parts failure code - number of failed parts
+FailureCode,Parts failure code - warranty failure code
+HostItemID,Host Item ID.
+LaborCost,Cost of the labor sold to this labor operation
+LaborDebitAccount,Debit account number and override flag.
+LaborDebitCompany,Labor Debit Company.
+LaborDebitControl,Debit control number and override flag.
+LaborDiscount,discount in RO-MLS<90> for the line.
+LaborJournal,Journal number for the labor operation.
+LaborJournalCompany,Labor Journal Company.
+LaborSale,Labor sale amount for the op code
+LaborSaleAccount,Labor sale account
+LaborSaleCompany,Labor Sale Company.
+LaborSaleControl,Labor sale control number and override flag.
+LaborType,Labor type
+LineCode,Line Code.
+LopSeqNo,Labor operation sequence number
+MCDLaborPercentage,The labor split percentage.
+Make,Vehicle Make
+MiscCost,Cost in RO-MLS<2> for the line.
+MiscSale,Sale in RO-MLS<3> for the line.
+OpCode,Op-code for the labor operation.
+OpCodeDescription,Original labor operation
+OriginAppl,Origin application
+OriginCode,Origin code
+OtherHours,This is the sum of Tech Other Hours.
+PartsCost,Cost of parts sold to the labor operation
+PartsDiscount,Parts Discount in RO-MLS<93> for the line.
+PartsFlag,Parts sequence numbers attached to this operation.
+PartsSale,Amount of parts sold on the op code
+PickItemID,Repair order number
+RONumber,RO Number.
+ServiceRequest,Line Description entered on RO/SWR screen.
+ServiceWriter,Service Advisor Number entered on RO/SWR screen.
+SoldHours,This is the sum of TechSoldHours.
+StorySeqNumber,Number of latest version of the technician's story for a given repair line code.
+TechNo,Technician number
+TechNo2,Technician number
+TechNo3,Technician number
+TechNo4,Technician number
+TechNo5,Technician number
+TechNos,Technician numbers
+TimeCardHours,Number of timecard hours applied to the labor operation
+VehID,Vehicle ID on the RO.
+lopDiscSeqNos,Discount record sequence number. Multivalued
+lopOriginAppl,Application that originated the labor operation
+lopOriginCode,Code that indicates the origin of the labor operation
