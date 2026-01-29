@@ -21,9 +21,10 @@ export function UploadDialog() {
     if (!files || files.length === 0) return;
 
     const formData = new FormData();
-    Array.from(files).forEach((file) => {
-      formData.append("files", file);
-    });
+    // Use files.length instead of files to iterate correctly
+    for (let i = 0; i < files.length; i++) {
+      formData.append("files", files[i]);
+    }
 
     uploadFiles(formData, {
       onSuccess: () => {

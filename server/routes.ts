@@ -76,7 +76,7 @@ export async function registerRoutes(
     }
   });
 
-  app.post(api.ingest.upload.path, upload.array('files'), async (req, res) => {
+  app.post(api.ingest.upload.path, upload.array('files', 10), async (req, res) => {
     if (!req.files || (req.files as any[]).length === 0) {
       return res.status(400).json({ message: "No files uploaded" });
     }
@@ -84,10 +84,17 @@ export async function registerRoutes(
     const files = req.files as Express.Multer.File[];
     console.log(`Received ${files.length} files for upload`);
     
+    // Create directory if it doesn't exist
+    if (!fs.existsSync("data/incoming")) {
+      fs.mkdirSync("data/incoming", { recursive: true });
+    }
+
     for (const file of files) {
       const targetPath = path.join("data/incoming", file.originalname);
       console.log(`Saving file: ${file.originalname} to ${targetPath}`);
-      fs.renameSync(file.path, targetPath);
+      // Use copyFileSync + unlinkSync instead of renameSync to avoid cross-device issues
+      fs.copyFileSync(file.path, targetPath);
+      fs.unlinkSync(file.path);
     }
     
     // Auto-trigger processing
