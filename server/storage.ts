@@ -57,16 +57,17 @@ export class DatabaseStorage implements IStorage {
     
     // Debug logging
     const totalVehicles = await db.select({ count: count() }).from(factReconVehicles);
-    console.log(`Dashboard Stats Debug: Total Vehicles in Fact Table: ${totalVehicles[0].count}`);
-    console.log(`Dashboard Stats Debug: Stats Row: ${JSON.stringify(row)}`);
-
+    const lastLogs = await this.getIngestionLogs();
+    
     return {
       avgReconDays: Math.round(Number(row.avg) || 0),
       medianReconDays: 0,
       countInProgress: Number(row.countInProgress) || 0,
+      countNoRecon: Number(await db.select({ count: count() }).from(factReconVehicles).where(eq(factReconVehicles.reconStatus, "NO_RECON_FOUND")).then(r => r[0].count)),
       countCompleted: Number(row.countCompleted) || 0,
       countOverThreshold: Number(row.countOverThreshold) || 0,
       totalReconCost: Number(row.totalReconCost) || 0,
+      lastIngestLogs: lastLogs
     };
   }
 
@@ -80,9 +81,16 @@ export class DatabaseStorage implements IStorage {
     if (filters.location && filters.location !== "All") {
       conditions.push(eq(factReconVehicles.lotLocation, filters.location));
     }
-    if (filters.status && filters.status !== "All") {
+    
+    if (filters.status === "IN_RECON") {
+      conditions.push(sql`${factReconVehicles.reconStatus} != 'COMPLETE'`);
+    } else if (filters.status && filters.status !== "All") {
       conditions.push(eq(factReconVehicles.reconStatus, filters.status as any));
+    } else {
+      // Default: exclude COMPLETE
+      conditions.push(sql`${factReconVehicles.reconStatus} != 'COMPLETE'`);
     }
+
     if (filters.store && filters.store !== "All") {
       conditions.push(eq(factReconVehicles.inventoryCompany, filters.store));
     }
