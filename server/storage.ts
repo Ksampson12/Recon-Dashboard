@@ -194,13 +194,42 @@ export class DatabaseStorage implements IStorage {
 
   async upsertRoDetails(items: ServiceRoDetail[]): Promise<void> {
     if (items.length === 0) return;
-    // Just insert - no delete to avoid deadlocks. Caller handles cleanup if needed.
-    const BATCH_SIZE = 500;
-    for (let i = 0; i < items.length; i += BATCH_SIZE) {
-      const batch = items.slice(i, i + BATCH_SIZE);
-      await db.insert(serviceRoDetails).values(batch);
+    
+    // Filter out items without sourceId to fallback to insert or skip
+    // For now, we assume sourceId is present as validated in ingest
+    const validItems = items.filter(i => i.sourceId);
+    
+    if (validItems.length === 0) {
+        // Fallback for legacy data without sourceId - just insert (risk of duplicates if not careful)
+        const BATCH_SIZE = 500;
+        for (let i = 0; i < items.length; i += BATCH_SIZE) {
+            const batch = items.slice(i, i + BATCH_SIZE);
+            await db.insert(serviceRoDetails).values(batch);
+        }
+        return;
     }
-    console.log(`Inserted ${items.length} RO details in batches`);
+
+    // Process in batches
+    const BATCH_SIZE = 500;
+    for (let i = 0; i < validItems.length; i += BATCH_SIZE) {
+      const batch = validItems.slice(i, i + BATCH_SIZE);
+      
+      await db.insert(serviceRoDetails)
+        .values(batch)
+        .onConflictDoUpdate({
+          target: serviceRoDetails.sourceId,
+          set: {
+            opCode: sql`excluded.op_code`,
+            opDescription: sql`excluded.op_description`,
+            laborType: sql`excluded.labor_type`,
+            laborSale: sql`excluded.labor_sale`,
+            laborCost: sql`excluded.labor_cost`,
+            partsSale: sql`excluded.parts_sale`,
+            partsCost: sql`excluded.parts_cost`
+          }
+        });
+    }
+    console.log(`Upserted ${validItems.length} RO details in batches`);
   }
 
   async deleteRoDetailsForRoNumbers(roNumbers: string[]): Promise<void> {

@@ -37,6 +37,7 @@ export const serviceRos = pgTable("service_ros", {
 // 3. Service RO Details (Lines)
 export const serviceRoDetails = pgTable("service_ro_details", {
   id: serial("id").primaryKey(),
+  sourceId: text("source_id").unique(), // hostitemid from DMS (KD037909*68649*1*0)
   roNumber: text("ro_number").notNull(),
   opCode: text("op_code").notNull(),
   opDescription: text("op_description"),

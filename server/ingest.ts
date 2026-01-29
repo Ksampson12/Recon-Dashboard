@@ -177,6 +177,7 @@ async function processRecords(type: string, records: any[]) {
 
   if (type === "RO_CLOSED_DETAILS" || type === "RO_OPEN_DETAILS") {
     const items: ServiceRoDetail[] = records.map(r => ({
+      sourceId: r.hostitemid || r.HostItemId || null,
       roNumber: r.ronumber || r.RONumber || r.RepairOrder,
       opCode: String(r.opcode || r.OpCode || r.OperationCode || ""),
       opDescription: r.opcodedescription || r.opcodedesc || r.Description,
