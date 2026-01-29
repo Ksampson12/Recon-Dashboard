@@ -8,7 +8,13 @@ import { z } from "zod";
 import fs from "fs";
 import path from "path";
 
-const upload = multer({ dest: "data/incoming/" });
+// Increase limit to 500MB to handle multiple full history files
+const upload = multer({ 
+  dest: "data/incoming/",
+  limits: {
+    fileSize: 500 * 1024 * 1024 // 500MB limit
+  }
+});
 
 export async function registerRoutes(
   httpServer: Server,

@@ -52,7 +52,8 @@ export function UploadDialog() {
         <div className="flex flex-col gap-4 py-4">
           <div className="border-2 border-dashed border-border rounded-lg p-8 flex flex-col items-center justify-center text-center hover:bg-muted/50 transition-colors relative">
             <FileUp className="w-10 h-10 text-muted-foreground mb-4" />
-            <p className="text-sm text-muted-foreground mb-2">Drag and drop or click to browse</p>
+            <p className="text-sm text-muted-foreground mb-2">Drag and drop multiple files (CSV)</p>
+            <p className="text-xs text-muted-foreground">Select all 5 files at once to upload as a batch</p>
             <input
               type="file"
               accept=".csv"
