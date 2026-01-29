@@ -77,31 +77,41 @@ export async function registerRoutes(
   });
 
   app.post(api.ingest.upload.path, upload.array('files', 10), async (req, res) => {
-    if (!req.files || (req.files as any[]).length === 0) {
-      return res.status(400).json({ message: "No files uploaded" });
-    }
+    try {
+      if (!req.files || (req.files as any[]).length === 0) {
+        return res.status(400).json({ message: "No files uploaded" });
+      }
 
-    const files = req.files as Express.Multer.File[];
-    console.log(`Received ${files.length} files for upload`);
-    
-    // Create directory if it doesn't exist
-    if (!fs.existsSync("data/incoming")) {
-      fs.mkdirSync("data/incoming", { recursive: true });
-    }
+      const files = req.files as Express.Multer.File[];
+      console.log(`Received ${files.length} files for upload`);
+      
+      // Create directory if it doesn't exist
+      if (!fs.existsSync("data/incoming")) {
+        fs.mkdirSync("data/incoming", { recursive: true });
+      }
 
-    for (const file of files) {
-      const targetPath = path.join("data/incoming", file.originalname);
-      console.log(`Saving file: ${file.originalname} to ${targetPath}`);
-      // Use copyFileSync + unlinkSync instead of renameSync to avoid cross-device issues
-      fs.copyFileSync(file.path, targetPath);
-      fs.unlinkSync(file.path);
+      for (const file of files) {
+        const targetPath = path.join("data/incoming", file.originalname);
+        console.log(`Saving file: ${file.originalname} to ${targetPath}`);
+        // Use copyFileSync + unlinkSync instead of renameSync to avoid cross-device issues
+        fs.copyFileSync(file.path, targetPath);
+        fs.unlinkSync(file.path);
+      }
+      
+      // Auto-trigger processing
+      const processed = await processFiles();
+      console.log(`Processed ${processed.length} files successfully: ${processed.join(', ')}`);
+      
+      res.json({ 
+        message: "Files uploaded and ingestion triggered", 
+        count: files.length, 
+        processedCount: processed.length,
+        processed 
+      });
+    } catch (err: any) {
+      console.error("Upload handler error:", err);
+      res.status(500).json({ message: err.message });
     }
-    
-    // Auto-trigger processing
-    const processed = await processFiles();
-    console.log(`Processed ${processed.length} files successfully`);
-    
-    res.json({ message: "Files uploaded and ingestion triggered", count: files.length, processed });
   });
 
   return httpServer;

@@ -27,8 +27,11 @@ export function UploadDialog() {
     }
 
     uploadFiles(formData, {
-      onSuccess: () => {
-        toast({ title: "Upload Successful", description: `Uploaded ${files.length} file(s)` });
+      onSuccess: (data) => {
+        toast({ 
+          title: "Upload Successful", 
+          description: `Uploaded ${files.length} file(s). Processed: ${data.processedCount || 0}` 
+        });
         setOpen(false);
         setFiles(null);
       },
