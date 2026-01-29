@@ -132,11 +132,20 @@ async function processRecords(type: string, records: any[]) {
   if (type === "INVENTORY") {
     const items: InventoryVehicle[] = records.map(r => {
       const stockType = (r.stocktype || r.StockType || "").toUpperCase();
+      
+      // Map Inventory Company based on Accounting Account first, fallback to numeric ID
+      let invCompany = r.inventorycompany || r.InventoryCompany || null;
+      const acct = (r.accountingaccount || r.AccountingAccount || "").toUpperCase();
+      
+      if (acct.includes("ACF")) invCompany = "1";
+      else if (acct.includes("LCF")) invCompany = "2";
+      else if (acct.includes("CFMG")) invCompany = "3";
+
       return {
         vin: r.vin || r.VIN,
         stockNo: r.stockno || r.stocknumber || r.StockNo,
         stockType: stockType,
-        inventoryCompany: r.inventorycompany || r.InventoryCompany || null, // 1=ACF, 2=LCF, 3=CFMG
+        inventoryCompany: invCompany, // 1=ACF, 2=LCF, 3=CFMG
         entryDate: parseDate(r.entrydate || r.EntryDate || r.DateIn) || new Date().toISOString(),
         year: parseInt(r.year || r.Year) || 0,
         make: r.make || r.makenameupper || r.Make,
